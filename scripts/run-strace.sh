@@ -40,9 +40,13 @@ error()
     local -r exitCode="$1"; shift
     local -r format="$1"; shift
 
-    printf "Error: $format\n" "$@"
+    printf "Error: $format\n" "$@" 1>&2
 
     if [[ "$exitCode" != '-' ]]; then
+        if (( exitCode == 1 )); then
+            echo 1>&2
+            printHelp 1>&2
+        fi
         exit "$exitCode"
     fi
 }
@@ -79,18 +83,18 @@ main()
             if (( $# > 0 )); then
                 outputFile="$1"; shift
             else
-                error 1 '%s: %s' "$arg" "Missing argument."
+                error 1 "\`%s': %s" "$arg" 'Missing argument.'
             fi
             ;;
           --output=*)
             outputFile="${arg#--output=}"
             ;;
-          -*)
-            error 1 '%s: Unknown option' "$arg"
-            ;;
           --)
             cmd=("$@")
             break
+            ;;
+          -*)
+            error 1 "\`%s': %s" "$arg" 'Unknown option.'
             ;;
           *)
             # Not an option, assuming it's a command.
@@ -99,6 +103,10 @@ main()
             ;;
         esac
     done
+
+    if (( ${#cmd[@]} == 0 )); then
+        error 1 '%s' 'Missing COMMAND argument.'
+    fi
 
     _strace "$outputFile" "${cmd[@]}"
 }
