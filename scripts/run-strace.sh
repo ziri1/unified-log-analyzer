@@ -11,8 +11,15 @@ printHelp()
 
     cat << EOF
 Usage:
-  ${progName} [--] COMMAND [ARGS]
+
+  ${progName} [OPTIONS] [--] COMMAND [ARGS]
   ${progName} {-h|--help|-V|--version}
+
+Options:
+
+  -o FILE, --output=FILE
+
+    Save strace output in to FILE, default is \`strace.out'.
 EOF
 }
 
@@ -42,12 +49,15 @@ error()
 
 _strace()
 {
-    strace -v -f -s 2048 -e trace=file -o strace.out -- "$@"
+    local outputFile="$1"; shift
+
+    strace -v -f -s 2048 -e trace=file -o "$outputFile" -- "$@"
 }
 
 main()
 {
     local -a cmd=()
+    local outputFile='strace.out'
     local arg=''
 
     while (( $# > 0 )); do
@@ -65,6 +75,16 @@ main()
             printNumericVersion
             exit 0
             ;;
+          -o)
+            if (( $# > 0 )); then
+                outputFile="$1"; shift
+            else
+                error 1 '%s: %s' "$arg" "Missing argument."
+            fi
+            ;;
+          --output=*)
+            outputFile="${arg#--output=}"
+            ;;
           -*)
             error 1 '%s: Unknown option' "$arg"
             ;;
@@ -73,13 +93,14 @@ main()
             break
             ;;
           *)
+            # Not an option, assuming it's a command.
             cmd=("$arg" "$@")
             break
             ;;
         esac
     done
 
-    _strace "${cmd[@]}"
+    _strace "$outputFile" "${cmd[@]}"
 }
 
 main "$@"
