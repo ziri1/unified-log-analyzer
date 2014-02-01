@@ -5,7 +5,7 @@ set -e
 
 declare -r version='0.1.0.0'
 
-printHelp()
+function printHelp()
 {
     local -r progName="${0##*/}"
 
@@ -23,19 +23,19 @@ Options:
 EOF
 }
 
-printNumericVersion()
+function printNumericVersion()
 {
     echo "$version"
 }
 
-printVersion()
+function printVersion()
 {
     local -r progName="${0##*/}"
 
     echo "$progName $version"
 }
 
-error()
+function error()
 {
     local -r exitCode="$1"; shift
     local -r format="$1"; shift
@@ -51,14 +51,24 @@ error()
     fi
 }
 
-_strace()
+function _strace()
 {
     local outputFile="$1"; shift
 
-    strace -v -f -s 2048 -e trace=file -o "$outputFile" -- "$@"
+    # strace -v -f -s 2048 -e trace=file,process -o "$outputFile" -- "$@"
+
+    # On some old systems (RHEL3) strace doesn't have support for large files,
+    # hence the `-o "| cat > ..."'.
+    strace \
+        -v \
+        -f \
+        -s 2048 \
+        -e trace=file,process \
+        -o "| cat > $outputFile" \
+        -- "$@"
 }
 
-main()
+function main()
 {
     local -a cmd=()
     local outputFile='strace.out'
