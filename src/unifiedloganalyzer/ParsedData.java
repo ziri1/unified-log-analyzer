@@ -1,22 +1,58 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package unifiedloganalyzer;
+
+import java.io.IOException;
+import java.lang.Appendable;
+import java.lang.IllegalArgumentException;
+
+import trskop.IAppendTo;
+
+import unifiedloganalyzer.IParsedData;
+
 
 /**
  *
- * @author CZ2B1142
+ * @author Peter Trsko
  */
-public class ParsedData {
-
-    void setPID(Object object, Object object0) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+public class ParsedData implements IParsedData
+{
+    public enum Type
+    {
+        PARSED_MESSAGE,
+        PARSE_ERROR,
+        EMPTY_MESSAGE;
     }
 
-    void setPWD(Object object) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    private Type _dataType;
+    private IParsedData _data;
+
+    public ParsedData(Type dataType, IParsedData data)
+    {
+        if (data == null)
+        {
+            throw new IllegalArgumentException("null");
+        }
+
+        _dataType = dataType;
+        _data = data;
+    }
+
+    public Type getType()
+    {
+        return _dataType;
+    }
+
+    public IParsedData getData()
+    {
+        return _data;
+    }
+
+    public String getOriginalMessage()
+    {
+        return _data.getOriginalMessage();
+    }
+
+    public void appendTo(Appendable buff) throws IOException
+    {
+        _data.appendTo(buff);
     }
 }

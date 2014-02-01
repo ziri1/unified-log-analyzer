@@ -1,15 +1,14 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package unifiedloganalyzer;
+
+import unifiedloganalyzer.IRegisterCallbacks;
+import unifiedloganalyzer.ParsedData;
+
 
 /**
  *
- * @author CZ2B1142
+ * @author Kamil Cupr
  */
-public interface IParser {
-    ParsedData parse(String data);
+public interface IParser extends IRegisterCallbacks<ParsedData>
+{
+    void parse(String data);
 }

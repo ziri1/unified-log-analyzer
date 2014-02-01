@@ -1,10 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-package unifiedloganalyzer;
+package unifiedloganalyzer.io;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -14,14 +8,19 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import unifiedloganalyzer.ISource;
+
+
 /**
  *
- * @author CZ2B1142
+ * @author Kamil Cupr
  */
-public class FileSource implements ISource {
+public class FileSource implements ISource
+{
     private File myFile = null;
     private BufferedReader myBuffer = null;
     private String currentLine = null;
+
     public FileSource(String sFile) {
         myFile = new File(sFile);
         try {
@@ -35,12 +34,10 @@ public class FileSource implements ISource {
         }
     }
 
-    @Override
     public boolean hasNext() {
         return currentLine != null;
     }
 
-    @Override
     public String next() {
         String ret = currentLine;
         try {
@@ -51,7 +48,6 @@ public class FileSource implements ISource {
         return ret;
     }
 
-    @Override
     public void remove() {
         //destructive next() does this work for us
     }
