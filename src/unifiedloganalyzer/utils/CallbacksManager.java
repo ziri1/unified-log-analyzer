@@ -1,6 +1,5 @@
-package unifiedloganalyzer;
+package unifiedloganalyzer.utils;
 
-import java.lang.IllegalArgumentException;
 import java.util.ArrayList;
 import java.util.List;
 

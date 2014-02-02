@@ -1,7 +1,6 @@
-package unifiedloganalyzer.dummy;
+package unifiedloganalyzer.analyze;
 
 import java.io.IOException;
-import java.lang.Appendable;
 
 import unifiedloganalyzer.IParsedData;
 import unifiedloganalyzer.IOutputMessage;

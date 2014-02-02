@@ -1,15 +1,15 @@
-package unifiedloganalyzer;
+package unifiedloganalyzer.analyze;
 
-import java.lang.IllegalArgumentException;
 import java.util.ArrayList;
 import java.util.List;
 
 import trskop.ICallback;
 
-import unifiedloganalyzer.CallbacksManager;
 import unifiedloganalyzer.IAnalyzer;
 import unifiedloganalyzer.IOutputMessage;
 import unifiedloganalyzer.IParsedData;
+import unifiedloganalyzer.ParsedData;
+import unifiedloganalyzer.utils.CallbacksManager;
 
 
 /**

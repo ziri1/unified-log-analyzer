@@ -1,11 +1,12 @@
-package unifiedloganalyzer.strace;
+package unifiedloganalyzer.parse.strace;
 
 import java.io.IOException;
 import java.lang.Appendable;
 
 import trskop.IAppendTo;
 
-import unifiedloganalyzer.AParsedData;
+import unifiedloganalyzer.parse.AParsedData;
+import unifiedloganalyzer.utils.IHasPid;
 
 
 /**

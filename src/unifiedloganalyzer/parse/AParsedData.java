@@ -1,8 +1,6 @@
-package unifiedloganalyzer;
+package unifiedloganalyzer.parse;
 
 import java.io.IOException;
-import java.lang.Appendable;
-import java.lang.IllegalArgumentException;
 
 import unifiedloganalyzer.IParsedData;
 

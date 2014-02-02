@@ -1,9 +1,9 @@
-package unifiedloganalyzer.dummy;
+package unifiedloganalyzer.analyze;
 
-import unifiedloganalyzer.AAnalyzer;
 import unifiedloganalyzer.IParsedData;
 import unifiedloganalyzer.ParsedData;
-import unifiedloganalyzer.dummy.DummyOutputMessage;
+import unifiedloganalyzer.analyze.AAnalyzer;
+import unifiedloganalyzer.analyze.DummyOutputMessage;
 
 
 /**

@@ -1,7 +1,7 @@
 package unifiedloganalyzer;
 
 import java.io.IOException;
-import java.util.Iterator;
+//import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -11,11 +11,11 @@ import unifiedloganalyzer.ISource;
 import unifiedloganalyzer.IWriter;
 import unifiedloganalyzer.adapter.AnalyzerCallback;
 import unifiedloganalyzer.adapter.WriterCallback;
-import unifiedloganalyzer.dummy.DummyAnalyzer;
+import unifiedloganalyzer.analyze.DummyAnalyzer;
 import unifiedloganalyzer.io.FileSource;
 import unifiedloganalyzer.io.FileWriter;
 import unifiedloganalyzer.io.StdoutWriter;
-import unifiedloganalyzer.strace.StraceParser;
+import unifiedloganalyzer.parse.strace.StraceParser;
 
 
 /**

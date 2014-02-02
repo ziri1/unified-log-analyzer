@@ -1,7 +1,6 @@
-package unifiedloganalyzer.strace;
+package unifiedloganalyzer.parse.strace;
 
 import java.io.IOException;
-import java.lang.Appendable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -10,14 +9,15 @@ import java.util.regex.Pattern;
 import trskop.ICallback;
 import trskop.container.Pair;
 
-import unifiedloganalyzer.CallbacksManager;
 import unifiedloganalyzer.IParsedData;
 import unifiedloganalyzer.IParser;
 import unifiedloganalyzer.ParsedData;
-import unifiedloganalyzer.ParseError;
-import unifiedloganalyzer.strace.StraceProcessStatusChangedParsedData;
-import unifiedloganalyzer.strace.StraceSignalParsedData;
-import unifiedloganalyzer.strace.StraceSyscallParsedData;
+import unifiedloganalyzer.parse.ParseError;
+import unifiedloganalyzer.parse.strace.StraceProcessStatusChangedParsedData;
+import unifiedloganalyzer.parse.strace.StraceSignalParsedData;
+import unifiedloganalyzer.parse.strace.StraceSyscallParsedData;
+import unifiedloganalyzer.utils.CallbacksManager;
+import unifiedloganalyzer.utils.IHasPid;
 
 
 /**
