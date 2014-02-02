@@ -1,5 +1,6 @@
 package unifiedloganalyzer.analyze;
 
+import unifiedloganalyzer.IOutputMessage;
 import unifiedloganalyzer.IParsedData;
 import unifiedloganalyzer.ParsedData;
 import unifiedloganalyzer.analyze.AAnalyzer;
@@ -13,8 +14,27 @@ import unifiedloganalyzer.analyze.DummyOutputMessage;
  */
 public class DummyAnalyzer extends AAnalyzer
 {
-    protected void doAnalysis(ParsedData.Type dataType, IParsedData data)
+    protected void processMessage(IParsedData data)
     {
         runCallbacks(new DummyOutputMessage(data));
     }
+
+    // {{{ AAnalyzer, implementation of abstract methods //////////////////////
+
+    protected void processEmptyMessage(IParsedData parsedData)
+    {
+        processMessage(parsedData);
+    }
+
+    protected void processParsedMessage(IParsedData parsedData)
+    {
+        processMessage(parsedData);
+    }
+
+    protected void processParseError(IParsedData parsedData)
+    {
+        processMessage(parsedData);
+    }
+
+    // }}} AAnalyzer, implementation of abstract methods //////////////////////
 }

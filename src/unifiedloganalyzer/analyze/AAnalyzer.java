@@ -1,5 +1,6 @@
 package unifiedloganalyzer.analyze;
 
+import java.lang.IllegalArgumentException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,14 +41,27 @@ public abstract class AAnalyzer implements IAnalyzer
 
     // {{{ IAnalyzer implementation ///////////////////////////////////////////
 
-    public void analyze(ParsedData data)
+    public void analyze(ParsedData parsedData)
     {
-        if (data == null)
+        if (parsedData == null)
         {
             throw new IllegalArgumentException("null");
         }
 
-        doAnalysis(data.getType(), data.getData());
+        switch (parsedData.getType())
+        {
+            case EMPTY_MESSAGE:
+                processEmptyMessage(parsedData.getData());
+                break;
+
+            case PARSED_MESSAGE:
+                processParsedMessage(parsedData.getData());
+                break;
+
+            case PARSE_ERROR:
+                processParseError(parsedData.getData());
+                break;
+        }
     }
 
     public void registerCallback(ICallback<IOutputMessage> callback)
@@ -62,6 +76,7 @@ public abstract class AAnalyzer implements IAnalyzer
         _callbacksManager.runCallbacks(message);
     }
 
-    protected abstract void doAnalysis(ParsedData.Type dataType,
-        IParsedData data);
+    protected abstract void processEmptyMessage(IParsedData parsedData);
+    protected abstract void processParsedMessage(IParsedData parsedData);
+    protected abstract void processParseError(IParsedData parsedData);
 }
