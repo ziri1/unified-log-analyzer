@@ -12,8 +12,10 @@ import unifiedloganalyzer.IWriter;
 
 
 /**
+ * Adapts IWriter interface to ICallback&lt;IOutputMessage&gt; while also
+ * proxying IWriter interface.
  *
- * @author TP000001 (Peter Trsko)
+ * @author Peter Trsko
  */
 public class WriterCallback implements IWriter, ICallback<IOutputMessage>
 {
@@ -24,21 +26,39 @@ public class WriterCallback implements IWriter, ICallback<IOutputMessage>
         _writer = writer;
     }
 
+    // {{{ IWriter interface implementation ///////////////////////////////////
+
+    /**
+     * {@inheritDoc}
+     */
     public void write(IOutputMessage message) throws IOException
     {
         _writer.write(message);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void flush() throws IOException
     {
         _writer.flush();
     }
 
-    public void eof() throws IOException
+    /**
+     * {@inheritDoc}
+     */
+    public void close() throws IOException
     {
-        _writer.eof();
+        _writer.close();
     }
 
+    // }}} IWriter interface implementation ///////////////////////////////////
+
+    // {{{ ICallback<IOutputMessage> interface implementation /////////////////
+
+    /**
+     * {@inheritDoc}
+     */
     public void runCallback(IOutputMessage message)
     {
         try
@@ -51,4 +71,6 @@ public class WriterCallback implements IWriter, ICallback<IOutputMessage>
                 .log(Level.SEVERE, null, ex);
         }
     }
+
+    // }}} ICallback<IOutputMessage> interface implementation /////////////////
 }

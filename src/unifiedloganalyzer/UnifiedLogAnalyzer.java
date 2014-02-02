@@ -67,7 +67,7 @@ public class UnifiedLogAnalyzer
             while (source.hasNext()) {
                 parser.parse(source.next());
             }
-            writer.eof();
+            writer.close();
         }
         catch (IOException ex)
         {

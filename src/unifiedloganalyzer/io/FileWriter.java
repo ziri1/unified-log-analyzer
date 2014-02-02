@@ -75,7 +75,7 @@ public class FileWriter implements IWriter
         }
     }
 
-    public void eof() throws IOException
+    public void close() throws IOException
     {
         doWrite();
         flush();

@@ -80,7 +80,7 @@ public class StdoutWriter implements IWriter
         System.out.flush();
     }
 
-    public void eof() throws IOException
+    public void close() throws IOException
     {
         flush();
         System.out.close();     // XXX
