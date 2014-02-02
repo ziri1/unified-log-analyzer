@@ -707,7 +707,7 @@ public class StraceParser implements IParser
         if (fileArgumentAndRest != null)
         {
             // Setting to null is OK, since it's a default value.
-            parsedData.setFile(fileArgumentAndRest.first);
+            parsedData.setPath(fileArgumentAndRest.first);
 
             switch (syscall)
             {

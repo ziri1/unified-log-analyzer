@@ -8,6 +8,7 @@ import java.util.Map;
 import trskop.IAppendTo;
 
 import unifiedloganalyzer.parse.AParsedData;
+import unifiedloganalyzer.utils.IHasPath;
 import unifiedloganalyzer.utils.IHasPid;
 
 
@@ -16,7 +17,8 @@ import unifiedloganalyzer.utils.IHasPid;
  *
  * @author Peter Trsko
  */
-public class StraceSyscallParsedData extends AParsedData implements IHasPid
+public class StraceSyscallParsedData extends AParsedData
+    implements IHasPid, IHasPath
 {
     // {{{ Nested types ///////////////////////////////////////////////////////
 
@@ -134,7 +136,7 @@ public class StraceSyscallParsedData extends AParsedData implements IHasPid
     private String _syscallName = null;
     private int _pid = -1;
     private int _childPid = -1;
-    private String _file = null;    // Lot of syscalls take path as an argument.
+    private String _path = null;    // Lot of syscalls take path as an argument.
     private String _result = null;
     private ResultType _resultType = ResultType.UNKNOWN;
     private String _errno = null;
@@ -166,6 +168,62 @@ public class StraceSyscallParsedData extends AParsedData implements IHasPid
 
     // }}} Constructors ///////////////////////////////////////////////////////
 
+    // {{{ IHasPid interface implementation ///////////////////////////////////
+
+    /**
+     * {@inheritDoc}
+     */
+    public int getPid()
+    {
+        return _pid;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void setPid(int pid)
+    {
+        _pid = pid;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean hasPid()
+    {
+        return _pid >= 0;
+    }
+
+    // }}} IHasPid interface implementation ///////////////////////////////////
+
+    // {{{ IHasPath interface implementation //////////////////////////////////
+
+    /**
+     * {@inheritDoc}
+     */
+    public String getPath()
+    {
+        return _path;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void setPath(String path)
+    {
+        _path = path;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean hasPath()
+    {
+        return _path != null;
+    }
+
+    // {{{ IHasPath interface implementation //////////////////////////////////
+
     // {{{ Getters and setters ////////////////////////////////////////////////
 
     public Syscall getSyscall()
@@ -180,17 +238,6 @@ public class StraceSyscallParsedData extends AParsedData implements IHasPid
     }
 
 
-    public int getPid()
-    {
-        return _pid;
-    }
-
-    public void setPid(int pid)
-    {
-        _pid = pid;
-    }
-
-
     public int getChildPid()
     {
         return _childPid;
@@ -199,20 +246,6 @@ public class StraceSyscallParsedData extends AParsedData implements IHasPid
     public void setChildPid(int childPid)
     {
         _childPid = childPid;
-    }
-
-
-    /**
-     *
-     */
-    public String getFile()
-    {
-        return _file;
-    }
-
-    public void setFile(String file)
-    {
-        _file = file;
     }
 
 
@@ -306,11 +339,6 @@ public class StraceSyscallParsedData extends AParsedData implements IHasPid
 
     // {{{ Predicates /////////////////////////////////////////////////////////
 
-    public boolean hasPid()
-    {
-        return _pid >= 0;
-    }
-
     public boolean hasChildPid()
     {
         return _childPid >= 0;
@@ -357,8 +385,8 @@ public class StraceSyscallParsedData extends AParsedData implements IHasPid
             .append(Integer.toString(_childPid))
             .append('\n');
 
-        buff.append(", file = ")
-            .append(_file)
+        buff.append(", path = ")
+            .append(_path)
             .append('\n');
 
         buff.append(", result = ")
