@@ -21,7 +21,8 @@ public class FileSource implements ISource
     private BufferedReader myBuffer = null;
     private String currentLine = null;
 
-    public FileSource(String sFile) {
+    public FileSource(String sFile, boolean isGzipped)
+    {
         myFile = new File(sFile);
         try {
             myBuffer = new BufferedReader(new FileReader(myFile));
@@ -32,6 +33,11 @@ public class FileSource implements ISource
         } catch (IOException ex) {
             Logger.getLogger(FileSource.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    public FileSource(String file)
+    {
+        this(file, false);
     }
 
     public boolean hasNext() {
