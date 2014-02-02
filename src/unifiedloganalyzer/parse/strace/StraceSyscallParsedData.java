@@ -22,7 +22,7 @@ public class StraceSyscallParsedData extends AParsedData
 {
     // {{{ Nested types ///////////////////////////////////////////////////////
 
-    public enum Syscall implements IAppendTo
+    public static enum Syscall implements IAppendTo
     {
         ACCESS,
         CHDIR,
@@ -103,7 +103,7 @@ public class StraceSyscallParsedData extends AParsedData
         }
     }
 
-    public enum ResultType implements IAppendTo
+    public static enum ResultType implements IAppendTo
     {
         INTEGER,
         POINTER,
@@ -115,7 +115,7 @@ public class StraceSyscallParsedData extends AParsedData
         }
     }
 
-    public enum Flag implements IAppendTo
+    public static enum Flag implements IAppendTo
     {
         FULL_CALL,
         UNFINISHED_CALL,
@@ -225,6 +225,12 @@ public class StraceSyscallParsedData extends AParsedData
     // {{{ IHasPath interface implementation //////////////////////////////////
 
     // {{{ Getters and setters ////////////////////////////////////////////////
+
+    public Flag getFlag()
+    {
+        return _flag;
+    }
+
 
     public Syscall getSyscall()
     {
@@ -344,6 +350,11 @@ public class StraceSyscallParsedData extends AParsedData
         return _childPid >= 0;
     }
 
+    public boolean hasWorkingDirectory()
+    {
+        return _workingDirectory != null;
+    }
+
     public boolean isResultKnown()
     {
         return _resultType != ResultType.UNKNOWN;
@@ -357,6 +368,11 @@ public class StraceSyscallParsedData extends AParsedData
     public boolean isResultPointer()
     {
         return _resultType == ResultType.POINTER;
+    }
+
+    public boolean hasErrno()
+    {
+        return _errno != null;
     }
 
     // }}} Predicates /////////////////////////////////////////////////////////
