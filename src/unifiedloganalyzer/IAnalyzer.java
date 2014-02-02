@@ -1,8 +1,11 @@
 package unifiedloganalyzer;
 
 import trskop.ICallback;
+
+import unifiedloganalyzer.IOutputMessage;
 import unifiedloganalyzer.IRegisterCallbacks;
 import unifiedloganalyzer.IWriter;
+import unifiedloganalyzer.ParsedData;
 
 
 /**
@@ -15,8 +18,8 @@ public interface IAnalyzer extends IRegisterCallbacks<IOutputMessage>
     /**
      * Send ParsedData for analysis.
      *
-     * @param data
+     * @param parsedData
      *   Parsed log message.
      */
-    void analyze(ParsedData data);
+    void analyze(ParsedData parsedData);
 }
