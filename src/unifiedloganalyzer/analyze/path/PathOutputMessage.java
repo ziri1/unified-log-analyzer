@@ -48,6 +48,14 @@ public class PathOutputMessage implements IOutputMessage, IHasPath
     /**
      * {@inheritDoc}
      */
+    public void setPath(String path)
+    {
+        _path = path;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public boolean hasPath()
     {
         return _path != null;
