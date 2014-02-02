@@ -24,6 +24,27 @@ import unifiedloganalyzer.parse.strace.StraceParser;
  */
 public class UnifiedLogAnalyzer
 {
+
+    // {{{ Core algorithm /////////////////////////////////////////////////////
+
+    public static void doMain(
+        ISource source,
+        IParser parser,
+        IAnalyzer analyzer,
+        IWriter writer) throws IOException
+    {
+        parser.registerCallback(new AnalyzerCallback(analyzer));
+        analyzer.registerCallback(new WriterCallback(writer));
+
+        while (source.hasNext()) {
+            parser.parse(source.next());
+        }
+        parser.eof();
+        writer.close();
+    }
+
+    // }}} Core algorithm /////////////////////////////////////////////////////
+
     // public static void *factory
 
     /**
@@ -61,13 +82,7 @@ public class UnifiedLogAnalyzer
                 writer = new FileWriter(outputFile);
             }
 
-            parser.registerCallback(new AnalyzerCallback(analyzer));
-            analyzer.registerCallback(new WriterCallback(writer));
-
-            while (source.hasNext()) {
-                parser.parse(source.next());
-            }
-            writer.close();
+            doMain(source, parser, analyzer, writer);
         }
         catch (IOException ex)
         {

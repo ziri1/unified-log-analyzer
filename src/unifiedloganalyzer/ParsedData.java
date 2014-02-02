@@ -27,7 +27,7 @@ public class ParsedData implements IParsedData
 
     public ParsedData(Type dataType, IParsedData data)
     {
-        if (data == null)
+        if (dataType != Type.EMPTY_MESSAGE && data == null)
         {
             throw new IllegalArgumentException("null");
         }

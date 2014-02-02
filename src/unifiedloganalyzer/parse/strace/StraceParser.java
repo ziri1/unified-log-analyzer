@@ -230,6 +230,9 @@ public class StraceParser implements IParser
 
     // {{{ IParser implementation /////////////////////////////////////////////
 
+    /**
+     * {@inheritDoc}
+     */
     public void parse(String data)
     {
         ParsedData parsedMessage = parseTopLevel(data, _backlog);
@@ -257,6 +260,20 @@ public class StraceParser implements IParser
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public void eof()
+    {
+        // TODO: Should we clear backlog? Report parse error if its not empty?
+
+        _callbacksManager.runCallbacks(
+            new ParsedData(ParsedData.Type.EMPTY_MESSAGE, null));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public void registerCallback(ICallback<ParsedData> callback)
     {
         _callbacksManager.registerCallback(callback);

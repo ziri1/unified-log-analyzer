@@ -23,13 +23,26 @@ public class DummyOutputMessage implements IOutputMessage
 
     // {{{ IOutputMessage implementation //////////////////////////////////////
 
+    /**
+     * {@inheritDoc}
+     */
     public void appendTo(Appendable buff) throws IOException
     {
-        buff.append(_parsedData.getClass().getName())
-            .append(":\n");
-        _parsedData.appendTo(buff);
+        if (_parsedData == null)
+        {
+            buff.append("null");
+        }
+        else
+        {
+            buff.append(_parsedData.getClass().getName())
+                .append(":\n");
+            _parsedData.appendTo(buff);
+        }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean messageEquals(IOutputMessage message)
     {
         // Method equals might be overloaded, therefore its just sensible to
