@@ -18,11 +18,16 @@ public class FileWriter implements IWriter
     private BufferedWriter myWriter = null;
     private IOutputMessage previous = null;
     private Integer counter = 0;
-    
-    public FileWriter(String sFile) throws IOException
+
+    public FileWriter(String sFile, boolean isGzipped) throws IOException
     {
         myFile = new File(sFile);
         myWriter = new BufferedWriter(new java.io.FileWriter(myFile));
+    }
+
+    public FileWriter(String file) throws IOException
+    {
+        this(file, false);
     }
 
     private void doWrite() throws IOException
