@@ -1,6 +1,5 @@
 package unifiedloganalyzer.parse.strace;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -13,9 +12,6 @@ import unifiedloganalyzer.IParsedData;
 import unifiedloganalyzer.IParser;
 import unifiedloganalyzer.ParsedData;
 import unifiedloganalyzer.parse.ParseError;
-import unifiedloganalyzer.parse.strace.StraceProcessStatusChangedParsedData;
-import unifiedloganalyzer.parse.strace.StraceSignalParsedData;
-import unifiedloganalyzer.parse.strace.StraceSyscallParsedData;
 import unifiedloganalyzer.utils.CallbacksManager;
 import unifiedloganalyzer.utils.IHasPid;
 
@@ -167,15 +163,13 @@ public class StraceParser implements IParser
 
         public String doFinalize()
         {
-            String ret = null;
-
             if (!_shouldFinalize)
             {
                 throw new IllegalStateException("Can not finalize backlog"
                     + " that is not marked for finalization.");
             }
 
-            ret = _buff.toString();
+            String ret = _buff.toString();
             _buff.setLength(0);
             _shouldFinalize = false;
 
@@ -198,7 +192,9 @@ public class StraceParser implements IParser
             _shouldFinalize = true;
         }
 
-        // XXX
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public String toString()
         {
@@ -216,7 +212,7 @@ public class StraceParser implements IParser
     public StraceParser()
     {
         _backlog = new Backlog();
-        _callbacksManager = new CallbacksManager<ParsedData>();
+        _callbacksManager = new CallbacksManager<>();
     }
 
     public StraceParser(ICallback<ParsedData> callback)
@@ -233,9 +229,10 @@ public class StraceParser implements IParser
     /**
      * {@inheritDoc}
      */
-    public void parse(String data)
+    @Override
+    public void parse(String message)
     {
-        ParsedData parsedMessage = parseTopLevel(data, _backlog);
+        ParsedData parsedMessage = parseTopLevel(message, _backlog);
 
         // Backlog may contains message that was generated before currently
         // processed one, therefore we need to process it first.
@@ -263,6 +260,7 @@ public class StraceParser implements IParser
     /**
      * {@inheritDoc}
      */
+    @Override
     public void eof()
     {
         // TODO: Should we clear backlog? Report parse error if its not empty?
@@ -274,6 +272,7 @@ public class StraceParser implements IParser
     /**
      * {@inheritDoc}
      */
+    @Override
     public void registerCallback(ICallback<ParsedData> callback)
     {
         _callbacksManager.registerCallback(callback);
@@ -302,7 +301,6 @@ public class StraceParser implements IParser
     {
         Matcher topLevelMatcher = _TOP_LEVEL_PATTERN.matcher(str);
         ParsedData.Type dataType = ParsedData.Type.PARSED_MESSAGE;
-        String rest = null;
         IParsedData parsedData = null;  // Parse error.
 
         // _TOP_LEVEL_REGEX is constructed to always succeed and provide group(5), but you newer know.
@@ -316,7 +314,7 @@ public class StraceParser implements IParser
                 pid = topLevelMatcher.group(4);
             }
 
-            rest = topLevelMatcher.group(5);
+            String rest = topLevelMatcher.group(5);
 
             parsedData = parseProcessStatusChanged(str, rest);
 
@@ -748,8 +746,7 @@ public class StraceParser implements IParser
 
                     break;
 
-                case CHDIR:
-                    // Pass-through
+                case CHDIR: // Pass-through
                 case GETCWD:
                     parsedData.setWorkingDirectory(fileArgumentAndRest.first);
                     break;
@@ -783,25 +780,39 @@ public class StraceParser implements IParser
                 rest = "";  // Last argument.
             }
 
-            ret = new Pair<String, String>(m.group(1), rest);
+            ret = new Pair<>(m.group(1), rest);
         }
 
         return ret;
     }
 
+    /**
+     * Parse list of strings (like <code>["foo", "bar"]</code>) and return it
+     * along with unparsed rest of syscall arguments.
+     *
+     * This function uses parseStringArgument method internally.
+     *
+     * @param argsStr
+     *   List of arguments that should start with the list of strings as first
+     *   one.
+     *
+     * @return
+     *   List of strings passed as a first argument to the syscall and unparsed
+     *   rest of them; <code>null</code> in case of parsing failure, like when
+     *   argsStr isn't starting with list of strings, or when it's truncated
+     *   and list of strings is not terminated properly, etc.
+     */
     private static Pair<List<String>, String> parseListOfStringsArgument(
         String argsStr)
     {
-        String rest = null;
-        List<String> items = null;
-
         if (argsStr.charAt(0) != '[')
         {
             return null;    // Parsing failed.
         }
 
-        rest = argsStr.substring(1);    // Remove leading '[' character.
-        items = new ArrayList<String>();
+        String rest = argsStr.substring(1);    // Remove leading '[' character.
+        List<String> items = new ArrayList<>();
+
         while (rest.charAt(0) != ']')
         {
             Pair<String, String> strAndRest = parseStringArgument(rest);
@@ -820,7 +831,7 @@ public class StraceParser implements IParser
             rest = strAndRest.second;
         }
 
-        return new Pair<List<String>, String>(items,
+        return new Pair<>(items,
             rest.replaceFirst("](, *)?", ""));
     }
 
@@ -830,7 +841,7 @@ public class StraceParser implements IParser
 
         if (m.find())
         {
-            return new Pair<String, String>(m.group(1), m.group(2));
+            return new Pair<>(m.group(1), m.group(2));
         }
 
         return null;
@@ -839,7 +850,8 @@ public class StraceParser implements IParser
     private static Pair<List<String>, List<Pair<String, String>>>
         parseExecSpecifics(String str)
     {
-        Pair<List<String>, List<Pair<String, String>>> ret = new Pair(null, null);
+        Pair<List<String>, List<Pair<String, String>>> ret =
+            new Pair<>(null, null);
 
         Pair<List<String>, String> argsAndRest = parseListOfStringsArgument(str);
         if (argsAndRest == null
@@ -859,7 +871,7 @@ public class StraceParser implements IParser
             return ret;    // Parse error.
         }
 
-        List<Pair<String, String>> env = new ArrayList<Pair<String, String>>();
+        List<Pair<String, String>> env = new ArrayList<>();
         for (String item : envAndRest.first)
         {
             Pair<String, String> keyAndValue = parseEnvironmentVariable(item);
