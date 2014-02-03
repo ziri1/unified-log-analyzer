@@ -1,7 +1,5 @@
 package unifiedloganalyzer;
 
-import java.lang.Appendable;
-
 import trskop.IAppendTo;
 
 
@@ -13,7 +11,7 @@ import trskop.IAppendTo;
 public interface IParsedData extends IAppendTo
 {
     /**
-     * Get original (unparsed) message.
+     * Gets original (unparsed) message.
      *
      * @return
      *   Unparsed message as received by parser.

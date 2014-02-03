@@ -1,9 +1,5 @@
 package unifiedloganalyzer.analyze;
 
-import java.lang.IllegalArgumentException;
-import java.util.ArrayList;
-import java.util.List;
-
 import trskop.ICallback;
 
 import unifiedloganalyzer.IAnalyzer;
@@ -27,7 +23,7 @@ public abstract class AAnalyzer implements IAnalyzer
 
     public AAnalyzer()
     {
-        _callbacksManager = new CallbacksManager<IOutputMessage>();
+        _callbacksManager = new CallbacksManager<>();
     }
 
     public AAnalyzer(ICallback<IOutputMessage> callback)
@@ -41,6 +37,10 @@ public abstract class AAnalyzer implements IAnalyzer
 
     // {{{ IAnalyzer implementation ///////////////////////////////////////////
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void analyze(ParsedData parsedData)
     {
         if (parsedData == null)
@@ -64,6 +64,14 @@ public abstract class AAnalyzer implements IAnalyzer
         }
     }
 
+    /**
+     * Register object that should be notified when analysis result will be
+     * available.
+     * 
+     * @param callback
+     *   Object to be notified when analysis result is available.
+     */
+    @Override
     public void registerCallback(ICallback<IOutputMessage> callback)
     {
         _callbacksManager.registerCallback(callback);
@@ -71,12 +79,41 @@ public abstract class AAnalyzer implements IAnalyzer
 
     // }}} IAnalyzer implementation ///////////////////////////////////////////
 
+    /**
+     * Notify registered objects with analysis results.
+     * 
+     * @param message
+     *   Analysis result passed to resitered callback(s).
+     */
     protected void runCallbacks(IOutputMessage message)
     {
         _callbacksManager.runCallbacks(message);
     }
 
+    /**
+     * Process data from ParsedData that are tagged as EMPTY_MESSAGE.
+     * 
+     * @param parsedData
+     *   <code>null</code> or some specific message, depending on the protocol
+     *   that between this analyzer and object that sent this message.
+     */
     protected abstract void processEmptyMessage(IParsedData parsedData);
+    
+    /**
+     * Process data from ParsedData that are tagged as PARSED_MESSAGE.
+     * 
+     * @param parsedData
+     *   Parsed message as produced by object that sent it. It's not allowed to
+     *   be <code>null</code>.
+     */
     protected abstract void processParsedMessage(IParsedData parsedData);
+    
+    /**
+     * Process data from ParsedData that are tagged as PARSE_ERROR.
+     * 
+     * @param parsedData
+     *   Message that describes parse error or at least provides original
+     *   (unparsed) message. It's not allowed to be <code>null</code>.
+     */
     protected abstract void processParseError(IParsedData parsedData);
 }

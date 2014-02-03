@@ -1,8 +1,5 @@
 package unifiedloganalyzer;
 
-import unifiedloganalyzer.IRegisterCallbacks;
-import unifiedloganalyzer.ParsedData;
-
 
 /**
  * Generic interface for objects capable of parsing messages.
@@ -12,10 +9,16 @@ import unifiedloganalyzer.ParsedData;
 public interface IParser extends IRegisterCallbacks<ParsedData>
 {
     /**
-     * Parse specified message.
+     * Parses specified message.
+     * 
+     * Registered callbacks might not be notified immediately, because
+     * producing valid ParsedData might require more then one message to be
+     * processed.
      *
      * @param message
      *   Message to be parsed.
+     * 
+     * @see ParsedData
      */
     void parse(String message);
 
@@ -25,7 +28,6 @@ public interface IParser extends IRegisterCallbacks<ParsedData>
      * Sending another message for parsing after this is not an error. It just
      * indicates to the parser that any state it kept has to be discarded,
      * because another file/stream might be sent for parsing.
-     *
      */
     void eof();
 }

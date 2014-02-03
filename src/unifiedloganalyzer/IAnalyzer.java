@@ -1,12 +1,5 @@
 package unifiedloganalyzer;
 
-import trskop.ICallback;
-
-import unifiedloganalyzer.IOutputMessage;
-import unifiedloganalyzer.IRegisterCallbacks;
-import unifiedloganalyzer.IWriter;
-import unifiedloganalyzer.ParsedData;
-
 
 /**
  * Interface for object that perform analysis of parsed data.

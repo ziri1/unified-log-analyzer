@@ -13,7 +13,7 @@ import unifiedloganalyzer.ParsedData;
  */
 public class AnalyzerCallback implements IAnalyzer, ICallback<ParsedData>
 {
-    private IAnalyzer _analyzer;
+    private final IAnalyzer _analyzer;
 
     // {{{ Constructors ///////////////////////////////////////////////////////
 
@@ -26,6 +26,18 @@ public class AnalyzerCallback implements IAnalyzer, ICallback<ParsedData>
 
     // {{{ IAnalyzer implementation ///////////////////////////////////////////
 
+    /**
+     * Analyze parsed message.
+     * 
+     * This method is invoked by the object to which this instance is
+     * registered to.
+     * 
+     * @param message
+     *   Parsed message to be analyzed.
+     * 
+     * @see unifiedloganalyzer.IRegisterCallbacks
+     */
+    @Override
     public void runCallback(ParsedData message)
     {
         analyze(message);
@@ -35,11 +47,23 @@ public class AnalyzerCallback implements IAnalyzer, ICallback<ParsedData>
 
     // {{{ ICallback<IOutputMessage> implementation ///////////////////////////
 
-    public void analyze(ParsedData data)
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void analyze(ParsedData parsedData)
     {
-        _analyzer.analyze(data);
+        _analyzer.analyze(parsedData);
     }
 
+    /**
+     * Register object that should be notified when analysis result(s) will be
+     * available.
+     * 
+     * @param callback
+     *   Object to be notified when analysis result(s) will be available.
+     */
+    @Override
     public void registerCallback(ICallback<IOutputMessage> callback)
     {
         _analyzer.registerCallback(callback);

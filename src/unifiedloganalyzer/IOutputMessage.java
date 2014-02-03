@@ -1,7 +1,5 @@
 package unifiedloganalyzer;
 
-import java.lang.Appendable;
-
 import trskop.IAppendTo;
 
 
@@ -13,9 +11,9 @@ import trskop.IAppendTo;
 public interface IOutputMessage extends IAppendTo
 {
     /**
-     * Compare messages.
+     * Compares messages two instances of IOutputMessage.
      *
-     * This might be quite weaker then equals.
+     * Implementations of this method might be quite weaker then equals.
      *
      * @param message
      *   Compare message to this.

@@ -19,7 +19,7 @@ import unifiedloganalyzer.IWriter;
  */
 public class WriterCallback implements IWriter, ICallback<IOutputMessage>
 {
-    private IWriter _writer;
+    private final IWriter _writer;
 
     public WriterCallback(IWriter writer)
     {
@@ -30,7 +30,11 @@ public class WriterCallback implements IWriter, ICallback<IOutputMessage>
 
     /**
      * {@inheritDoc}
+     * 
+     * @throws IOException
+     *   If an I/O error occurs.
      */
+    @Override
     public void write(IOutputMessage message) throws IOException
     {
         _writer.write(message);
@@ -39,6 +43,7 @@ public class WriterCallback implements IWriter, ICallback<IOutputMessage>
     /**
      * {@inheritDoc}
      */
+    @Override
     public void flush() throws IOException
     {
         _writer.flush();
@@ -47,6 +52,7 @@ public class WriterCallback implements IWriter, ICallback<IOutputMessage>
     /**
      * {@inheritDoc}
      */
+    @Override
     public void close() throws IOException
     {
         _writer.close();
@@ -57,8 +63,12 @@ public class WriterCallback implements IWriter, ICallback<IOutputMessage>
     // {{{ ICallback<IOutputMessage> interface implementation /////////////////
 
     /**
-     * {@inheritDoc}
+     * Write analysis result.
+     * 
+     * @param message
+     *   Analysis result to be written.
      */
+    @Override
     public void runCallback(IOutputMessage message)
     {
         try
