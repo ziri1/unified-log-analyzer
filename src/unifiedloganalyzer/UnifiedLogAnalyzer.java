@@ -4,11 +4,6 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import unifiedloganalyzer.IAnalyzer;
-import unifiedloganalyzer.IParser;
-import unifiedloganalyzer.ISource;
-import unifiedloganalyzer.IWriter;
-
 import unifiedloganalyzer.adapter.AnalyzerCallback;
 import unifiedloganalyzer.adapter.WriterCallback;
 import unifiedloganalyzer.analyze.DummyAnalyzer;
@@ -141,34 +136,38 @@ public class UnifiedLogAnalyzer
     {
         Configuration config = ParseOptions.parseOptions(args);
 
-        ISource source = null;
-        IParser parser = null;
-        IAnalyzer analyzer = null;
-        IWriter writer = null;
-
         try
         {
-            source = sourceFactory(config.inputFile);
+            ISource source = sourceFactory(config.inputFile);
             if (source == null)
             {
-                throw new NullPointerException("source");
+                if (config.inputFile == null)
+                {
+                    System.err.println("Error: Using stdin as input is not"
+                        + " currently supported");
+                    System.exit(2);
+                }
+                else
+                {
+                    throw new NullPointerException("source");
+                }
             }
 
-            writer = writerFactory(config.outputFile);
+            IWriter writer = writerFactory(config.outputFile);
             if (writer == null)
             {
                 throw new NullPointerException("writer");
             }
 
-            parser = parserFactory(config.inputFormat);
+            IParser parser = parserFactory(config.inputFormat);
             if (parser == null)
             {
                 System.err.println("Error: " + config.inputFormat.toString()
                     + ": Unsupported input format.");
-                System.exit(1);
+                System.exit(2);
             }
 
-            analyzer = analyzerFactory(
+            IAnalyzer analyzer = analyzerFactory(
                 config.inputFormat,
                 config.analysisAlgorithm);
             if (parser == null)
@@ -179,7 +178,7 @@ public class UnifiedLogAnalyzer
                     + " compatible with specified input format ("
                     + config.inputFormat.toString()
                     + ").");
-                System.exit(1);
+                System.exit(2);
             }
 
             doMain(source, parser, analyzer, writer);
