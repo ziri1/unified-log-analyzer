@@ -12,6 +12,7 @@ import unifiedloganalyzer.IWriter;
 import unifiedloganalyzer.adapter.AnalyzerCallback;
 import unifiedloganalyzer.adapter.WriterCallback;
 import unifiedloganalyzer.analyze.DummyAnalyzer;
+import unifiedloganalyzer.analyze.path.strace.StracePathAnalyzer;
 import unifiedloganalyzer.io.FileSource;
 import unifiedloganalyzer.io.FileWriter;
 import unifiedloganalyzer.io.StdoutWriter;
@@ -105,7 +106,11 @@ public class UnifiedLogAnalyzer
                     return new DummyAnalyzer();
 
                 case STRACE_PATH_ANALYSIS:
-                    return new DummyAnalyzer();
+                    return new StracePathAnalyzer();
+
+                case STRACE_PATH_ANALYSIS_PARSED_DATA_PRESERVED:
+                    return new StracePathAnalyzer(
+                        StracePathAnalyzer.Configuration.preserveParsedData());
             }
         }
 

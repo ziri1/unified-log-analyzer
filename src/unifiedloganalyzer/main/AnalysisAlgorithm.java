@@ -6,7 +6,8 @@ import unifiedloganalyzer.main.InputFormat;
 public enum AnalysisAlgorithm
 {
     DUMMY(),
-    STRACE_PATH_ANALYSIS(InputFormat.STRACE);
+    STRACE_PATH_ANALYSIS(InputFormat.STRACE),
+    STRACE_PATH_ANALYSIS_PARSED_DATA_PRESERVED(InputFormat.STRACE);
 
     /**
      * List of supported input formats.
