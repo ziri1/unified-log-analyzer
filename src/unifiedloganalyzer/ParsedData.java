@@ -2,11 +2,6 @@ package unifiedloganalyzer;
 
 import java.io.IOException;
 
-import trskop.IAppendTo;
-
-import unifiedloganalyzer.IOutputMessage;
-import unifiedloganalyzer.IParsedData;
-
 
 /**
  * Top-level wrapper for parsed data.
@@ -81,6 +76,11 @@ public class ParsedData implements IParsedData, IOutputMessage
      * Simple wrapper around ParsedData constructor that returns correctly
      * formated parse error message.
      *
+     * @param data
+     *   IParsedData instance that represents parsing error description. Since
+     *   ParsedData class requires this argument to be not <code>null</code>
+     *   then at least original (unparsed) message should be provided.
+     *
      * @return
      *   ParsedData instance that describes parse error.
      */
@@ -119,6 +119,7 @@ public class ParsedData implements IParsedData, IOutputMessage
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getOriginalMessage()
     {
         return _data.getOriginalMessage();
@@ -129,6 +130,7 @@ public class ParsedData implements IParsedData, IOutputMessage
     /**
      * {@inheritDoc}
      */
+    @Override
     public void appendTo(Appendable buff) throws IOException
     {
         _data.appendTo(buff);
@@ -137,6 +139,7 @@ public class ParsedData implements IParsedData, IOutputMessage
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean messageEquals(IOutputMessage message)
     {
         if (message instanceof ParsedData)
@@ -145,11 +148,18 @@ public class ParsedData implements IParsedData, IOutputMessage
             IParsedData ourData = getData();
             IParsedData theirData = casted.getData();
 
+            String ourOriginalMessage = getOriginalMessage();
+            String theirOriginalMessage = casted.getOriginalMessage();
+
+            // Getting NullPointerException on either getType call is correct
+            // behaviour, because that should never be null.
             return getType() == casted.getType()
-                && getOriginalMessage() == casted.getOriginalMessage()
+                // We have to make sure that we don't get NullPointerException
+                // when calling equals neither ourOriginalMessage nor ourData.
+                && ((ourOriginalMessage == null && theirOriginalMessage == null)
+                    || (ourOriginalMessage != null
+                        && ourOriginalMessage.equals(theirOriginalMessage)))
                 && ((ourData == null && theirData == null)
-                    // We have to make sure that we don't get
-                    // NullPointerException when calling equals.
                     || (ourData != null && ourData.equals(theirData)));
         }
 
