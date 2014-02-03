@@ -41,4 +41,4 @@ Usage
 Dependencies
 ============
 
-    * <https://github.com/trskop/snippets/tree/master/java>
+* <https://github.com/trskop/snippets/tree/master/java>
