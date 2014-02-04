@@ -185,14 +185,14 @@ public class StracePathAnalyzer extends AAnalyzer
             _statistics.update(event);
         }
 
-        private boolean haveProcess(Integer pid)
+        private boolean hasProcess(Integer pid)
         {
             return _processes.containsKey(pid);
         }
 
-        private boolean haveProcess(int pid)
+        private boolean hasProcess(int pid)
         {
-            return haveProcess(new Integer(pid));
+            return hasProcess(new Integer(pid));
         }
 
         private Process addProcess(int pid)
@@ -202,7 +202,7 @@ public class StracePathAnalyzer extends AAnalyzer
 
         private Process addProcess(int parentPid, int pid)
         {
-            if (haveProcess(pid))
+            if (hasProcess(pid))
             {
                 throw new IllegalArgumentException("pid = " + pid);
             }
