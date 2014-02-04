@@ -3,16 +3,12 @@ package unifiedloganalyzer.analyze.path.strace;
 import java.io.IOException;
 import java.util.TreeMap;
 import java.util.Map;
-import java.util.regex.Pattern;
 //import java.util.Stack;
 
 import trskop.IAppendTo;
-import trskop.ICallback;
 import trskop.utils.AppendableLike;
 
-import unifiedloganalyzer.IOutputMessage;
 import unifiedloganalyzer.IParsedData;
-import unifiedloganalyzer.ParsedData;
 import unifiedloganalyzer.analyze.AAnalyzer;
 import unifiedloganalyzer.analyze.path.PathCompoundMessage;
 import unifiedloganalyzer.analyze.path.PathOutputMessage;
@@ -23,7 +19,7 @@ import unifiedloganalyzer.utils.IHasPid;
 
 
 /**
- * Analyze strace output to produce list of opened files.
+ * Analyse strace output to produce list of opened files.
  *
  * This class models process hierarchy as it existed during execution to
  * produce absolute paths instead of just stupidly printing path arguments to
@@ -84,26 +80,23 @@ public class StracePathAnalyzer extends AAnalyzer
 
         // {{{ Getters and setters ////////////////////////////////////////////
 
+        @Override
         public int getPid()
         {
             return _pid;
         }
 
+        @Override
         public void setPid(int pid)
         {
-            // TODO: Throw exception?
-            ;
+            throw new UnsupportedOperationException(
+                "PID of existing process can not be changed.");
         }
 
 
         public int getParentPid()
         {
             return _parentPid;
-        }
-
-        public void setParentPid()
-        {
-            ;
         }
 
         
@@ -130,6 +123,7 @@ public class StracePathAnalyzer extends AAnalyzer
 
         // }}} Getters and setters ////////////////////////////////////////////
 
+        @Override
         public boolean hasPid()
         {
             return _pid >= 0;
@@ -145,6 +139,7 @@ public class StracePathAnalyzer extends AAnalyzer
             return _workingDirectory != null;
         }
 
+        @Override
         public void appendTo(Appendable buff) throws IOException
         {
             (new AppendableLike(buff))
@@ -161,13 +156,6 @@ public class StracePathAnalyzer extends AAnalyzer
                 .append('\n')
 
                 .append("}\n");
-        }
-
-        @Override
-        public boolean equals(Object obj)
-        {
-            return obj instanceof Process
-                && _pid == ((Process)obj).getPid();
         }
     }
 
@@ -221,7 +209,7 @@ public class StracePathAnalyzer extends AAnalyzer
 
     public StracePathAnalyzer(Configuration config)
     {
-        _processes = new TreeMap<Integer, Process>();
+        _processes = new TreeMap<>();
         _statistics = new Statistics();
         _config = config == null ? Configuration.theDefault() : config;
     }
@@ -300,15 +288,12 @@ public class StracePathAnalyzer extends AAnalyzer
 
     private Process addProcess(int parentPid, int pid)
     {
-        Process parent = null;
-        Process child = null;
-
         if (haveProcess(pid))
         {
             throw new IllegalArgumentException("pid = " + pid);
         }
 
-        parent = getProcess(parentPid);
+        Process parent = getProcess(parentPid);
 
         if (parent == null)
         {
@@ -316,7 +301,7 @@ public class StracePathAnalyzer extends AAnalyzer
             _processes.put(new Integer(pid), parent);
         }
 
-        child = new Process(pid, parentPid, parent.getWorkingDirectory());
+        Process child = new Process(pid, parentPid, parent.getWorkingDirectory());
         child.setWorkingDirectory(parent.getWorkingDirectory());
 
         _processes.put(new Integer(pid), child);
@@ -508,11 +493,13 @@ public class StracePathAnalyzer extends AAnalyzer
 
     // {{{ AAnalyzer, implementation of abstract methods //////////////////////
 
+    @Override
     protected void processEmptyMessage(IParsedData parsedData)
     {
         runCallbacks(_statistics);
     }
 
+    @Override
     protected void processParsedMessage(IParsedData parsedData)
     {
         if (parsedData instanceof StraceSyscallParsedData)
@@ -534,6 +521,7 @@ public class StracePathAnalyzer extends AAnalyzer
         }
     }
 
+    @Override
     protected void processParseError(IParsedData parsedData)
     {
         updateStatistics(Statistics.Event.PARSE_ERROR);
