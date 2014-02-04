@@ -33,17 +33,32 @@ public class StracePathAnalyzer extends AAnalyzer
 
     private static class Process implements IHasPid, IAppendTo
     {
+        /**
+         * Any negative value can be used for its value.
+         */
         public static final int NO_PID = -2;
 
         private int _pid = NO_PID;
         private int _parentPid = NO_PID;
-        private String _executable = null; // TODO
+        private String _executable = null;
         private String _workingDirectory = null;
 
         // TODO: Queue of calls waiting to be resumend.
 
         // {{{ Constructors ///////////////////////////////////////////////////
 
+        /**
+         * Generic form of Process construction.
+         *
+         * @param pid
+         *   PID (system process ID) of this process.
+         *
+         * @param parentPid
+         *   Parent PID (system process ID) of this process.
+         *
+         * @param workingDirectory
+         *   Working directory of this process or <code>null</code> if unknown.
+         */
         public Process(int pid, int parentPid, String workingDirectory)
         {
             _pid = pid;
@@ -51,41 +66,47 @@ public class StracePathAnalyzer extends AAnalyzer
             _workingDirectory = workingDirectory;
         }
 
-        public Process(Integer pid, Integer parentPid, String workingDirectory)
-        {
-            this(pid.intValue(), parentPid.intValue(), workingDirectory);
-        }
-
+        /**
+         * Construct process with unknown parent PID.
+         *
+         * @param pid
+         *   PID (system process ID) of this process.
+         *
+         * @param workingDirectory
+         *   Parent PID (system process ID) of this process.
+         */
         public Process(int pid, String workingDirectory)
         {
             this(pid, NO_PID, workingDirectory);
         }
 
-        public Process(Integer pid, String workingDirectory)
-        {
-            this(pid.intValue(), NO_PID, workingDirectory);
-        }
-
+        /**
+         * Construct process with unknown parent PID and its working directory.
+         *
+         * @param pid
+         *   PID (system process ID) of this process.
+         */
         public Process(int pid)
         {
             this(pid, NO_PID, null);
         }
 
-        public Process(Integer pid)
-        {
-            this(pid.intValue(), NO_PID, null);
-        }
-
         // }}} Constructors ///////////////////////////////////////////////////
 
-        // {{{ Getters and setters ////////////////////////////////////////////
+        // {{{ IHasPid interface implementation ///////////////////////////////
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public int getPid()
         {
             return _pid;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void setPid(int pid)
         {
@@ -93,6 +114,18 @@ public class StracePathAnalyzer extends AAnalyzer
                 "PID of existing process can not be changed.");
         }
 
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public boolean hasPid()
+        {
+            return _pid >= 0;
+        }
+
+        // }}} IHasPid interface implementation ///////////////////////////////
+
+        // {{{ Getters and setters ////////////////////////////////////////////
 
         public int getParentPid()
         {
@@ -123,11 +156,7 @@ public class StracePathAnalyzer extends AAnalyzer
 
         // }}} Getters and setters ////////////////////////////////////////////
 
-        @Override
-        public boolean hasPid()
-        {
-            return _pid >= 0;
-        }
+        // {{{ Predicates /////////////////////////////////////////////////////
 
         public boolean hasParentPid()
         {
@@ -139,6 +168,11 @@ public class StracePathAnalyzer extends AAnalyzer
             return _workingDirectory != null;
         }
 
+        // }}} Predicates /////////////////////////////////////////////////////
+
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void appendTo(Appendable buff) throws IOException
         {
@@ -185,14 +219,9 @@ public class StracePathAnalyzer extends AAnalyzer
             _statistics.update(event);
         }
 
-        private boolean hasProcess(Integer pid)
-        {
-            return _processes.containsKey(pid);
-        }
-
         private boolean hasProcess(int pid)
         {
-            return hasProcess(new Integer(pid));
+            return _processes.containsKey(pid);
         }
 
         private Process addProcess(int pid)
@@ -224,22 +253,20 @@ public class StracePathAnalyzer extends AAnalyzer
             return child;
         }
 
+        private void removeProcess(int pid)
+        {
+            if (_processes.remove(pid) == null)
+            {
+                this.updateStatistics(Statistics.Event.REMOVE_PROCESS_MISS);
+            }
+        }
+
         private boolean hasWorkingDirectory(int pid)
         {
             return getWorkingDirectory(pid) != null;
         }
 
-        private boolean hasWorkingDirectory(Integer pid)
-        {
-            return getWorkingDirectory(pid) != null;
-        }
-
         private String getWorkingDirectory(int pid)
-        {
-            return getWorkingDirectory(new Integer(pid));
-        }
-
-        private String getWorkingDirectory(Integer pid)
         {
             Process process = getProcess(pid);
 
@@ -252,11 +279,6 @@ public class StracePathAnalyzer extends AAnalyzer
         }
 
         private Process getProcess(int pid)
-        {
-            return getProcess(new Integer(pid));
-        }
-
-        private Process getProcess(Integer pid)
         {
             Process p = _processes.get(pid);
 
@@ -333,6 +355,9 @@ public class StracePathAnalyzer extends AAnalyzer
         _config = config == null ? Configuration.theDefault() : config;
     }
 
+    /**
+     * Construct StracePathAnalyzer with default configuration.
+     */
     public StracePathAnalyzer()
     {
         this(null);

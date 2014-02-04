@@ -28,6 +28,7 @@ class Statistics implements IOutputMessage
         // Misses
 
         GET_PROCESS_MISS,
+        REMOVE_PROCESS_MISS,
         WORKING_DIRECTORY_MISS,
         NO_PWD_ENV_VAR,
 
@@ -49,6 +50,7 @@ class Statistics implements IOutputMessage
     private int _unknownMessageCount = 0;
 
     private int _getProcessMissesCount = 0;
+    private int _removeProcessMissesCount = 0;
     private int _wdMissesCount = 0;
     private int _pwdEnvVarMissesCount = 0;
 
@@ -98,6 +100,9 @@ class Statistics implements IOutputMessage
             case GET_PROCESS_MISS:
                 _getProcessMissesCount++;
                 break;
+            case REMOVE_PROCESS_MISS:
+                this._removeProcessMissesCount++;
+                break;
             case WORKING_DIRECTORY_MISS:
                 _wdMissesCount++;
                 break;
@@ -137,6 +142,10 @@ class Statistics implements IOutputMessage
                         .append(Integer.toString(_execCount))
                     .append("\n    , open = ")
                         .append(Integer.toString(_openCount))
+                    .append("\n    , getcwd = ")
+                        .append(Integer.toString(_getcwdCount))
+                    .append("\n    , chdir = ")
+                        .append(Integer.toString(_chdirCount))
                     .append("\n    }")
                 .append("\n  , signals = ")
                     .append(Integer.toString(_signalCount))
@@ -147,6 +156,8 @@ class Statistics implements IOutputMessage
                 .append("\n  }")
             .append("\n, getProcessMisses = ")
                 .append(Integer.toString(_getProcessMissesCount))
+            .append("\n, removeProcessMisses = ")
+                .append(Integer.toString(_removeProcessMissesCount))
             .append("\n, workingDirectoryMisses = ")
                 .append(Integer.toString(_wdMissesCount))
             .append("\n, pwdEnvVarMisses = ")
