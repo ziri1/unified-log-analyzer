@@ -99,7 +99,7 @@ public class StracePathAnalyzer extends AAnalyzer
             return _parentPid;
         }
 
-        
+
         public String getExecutable()
         {
             return _executable;
@@ -158,7 +158,7 @@ public class StracePathAnalyzer extends AAnalyzer
                 .append("}\n");
         }
     }
-    
+
     private static class ProcessModel
     {
         private Statistics _statistics = null;
@@ -167,7 +167,7 @@ public class StracePathAnalyzer extends AAnalyzer
          * Map process ID to its kept state.
          */
         private Map<Integer, Process> _processes = null;
-        
+
         public ProcessModel(Statistics statistics)
         {
             _statistics = statistics;
@@ -184,7 +184,7 @@ public class StracePathAnalyzer extends AAnalyzer
         {
             _statistics.update(event);
         }
-        
+
         private boolean haveProcess(Integer pid)
         {
             return _processes.containsKey(pid);
