@@ -38,9 +38,17 @@ final class Regex
 
     public static final String SOURCE_CODE = "^.*\\.(c|h|C|cpp|cxx|java)$";
 
-    public static final String BUILD_SYSTEM = "^makefile|.*\\.mk$";
+    public static final String BUILD_SYSTEM = "^[Mm]akefile|.*\\.mk$";
 
-    public static final String DATA_FILE = "^.*\\.xml";
+    public static final String DATA_FILE = "^.*\\.xml$";
+
+    public static final String SHELL_SCRIPT = "^.*\\.sh$";
+
+    public static final String BACKUP_FILE = "^.*(~|\\.bak)$";
+
+    public static final String WINDOWS_EXECUTABLE = "^.*\\.exe";
+
+    public static final String WINDOWS_BATCH_FILE = "^.*\\.(bat|cmd)$";
 
     // TODO:
     //   - .sh - Shell scripts.
@@ -71,32 +79,67 @@ public enum PathCategory
     OTHER();
 
     private boolean _isDefault = false;
-    private Pattern _pattern;
+    private Pattern _pattern = null;
 
+    /**
+     * Constructor for default case only.
+     */
     private PathCategory()
     {
         _isDefault = true;
-        _pattern = null;
     }
 
+    /**
+     * Constructor for non default cases.
+     *
+     * @param regex
+     *   Regular expression for this file category. It may be <code>null</code>
+     *   for such cases when file category can not be determined from just file
+     *   path.
+     */
     private PathCategory(String regex)
     {
-        _isDefault = false;
         _pattern = regex == null ? null : Pattern.compile(regex);
     }
 
+    /**
+     * Predicate that is <code>true</code> when this instance is a default case.
+     *
+     * @return
+     *   <code>true</code> if this instance is default case and
+     *   <code>false</code> otherwise.
+     */
     public boolean isDefault()
     {
         return _isDefault;
     }
 
+    /**
+     * Gets Pattern compiled from regular expression associated with this
+     * instance/case.
+     *
+     * @return
+     *   Compiled regular expression corresponding to this case.
+     */
     public Pattern getPattern()
     {
         return _pattern;
     }
 
+    /**
+     * Same as <code>getPattern().matcher(str)</code>, but it handles the case
+     * when getPattern returns <code>null</code> correctly.
+     *
+     * @param str
+     *   String to be matched against regular expression corresponding to this
+     *   file category.
+     *
+     * @return
+     *   Matcher object for <code>str</code> and pattern for this case, or
+     *   <code>null</code> when getPattern would also return <code>null</code>.
+     */
     public Matcher matcher(String str)
     {
-        return _pattern.matcher(str);
+        return _pattern == null ? null : _pattern.matcher(str);
     }
 }
