@@ -158,6 +158,128 @@ public class StracePathAnalyzer extends AAnalyzer
                 .append("}\n");
         }
     }
+    
+    private static class ProcessModel
+    {
+        private Statistics _statistics = null;
+
+        /**
+         * Map process ID to its kept state.
+         */
+        private Map<Integer, Process> _processes = null;
+        
+        public ProcessModel(Statistics statistics)
+        {
+            _statistics = statistics;
+            _processes = new TreeMap<>();
+        }
+
+        /**
+        * Update statistics with specified event.
+        *
+        * @param event
+        *   Event that occurred and statistics are kept for.
+        */
+        private void updateStatistics(Statistics.Event event)
+        {
+            _statistics.update(event);
+        }
+        
+        private boolean haveProcess(Integer pid)
+        {
+            return _processes.containsKey(pid);
+        }
+
+        private boolean haveProcess(int pid)
+        {
+            return haveProcess(new Integer(pid));
+        }
+
+        private Process addProcess(int pid)
+        {
+            return addProcess(Process.NO_PID, pid);
+        }
+
+        private Process addProcess(int parentPid, int pid)
+        {
+            if (haveProcess(pid))
+            {
+                throw new IllegalArgumentException("pid = " + pid);
+            }
+
+            Process parent = getProcess(parentPid);
+
+            if (parent == null)
+            {
+                parent = new Process(pid == -1 ? Process.NO_PID : pid, null);
+                _processes.put(new Integer(pid), parent);
+            }
+
+            Process child =
+                new Process(pid, parentPid, parent.getWorkingDirectory());
+            child.setWorkingDirectory(parent.getWorkingDirectory());
+
+            _processes.put(new Integer(pid), child);
+
+            return child;
+        }
+
+        private boolean hasWorkingDirectory(int pid)
+        {
+            return getWorkingDirectory(pid) != null;
+        }
+
+        private boolean hasWorkingDirectory(Integer pid)
+        {
+            return getWorkingDirectory(pid) != null;
+        }
+
+        private String getWorkingDirectory(int pid)
+        {
+            return getWorkingDirectory(new Integer(pid));
+        }
+
+        private String getWorkingDirectory(Integer pid)
+        {
+            Process process = getProcess(pid);
+
+            if (process == null)
+            {
+                return null;
+            }
+
+            return process.getWorkingDirectory();
+        }
+
+        private Process getProcess(int pid)
+        {
+            return getProcess(new Integer(pid));
+        }
+
+        private Process getProcess(Integer pid)
+        {
+            Process p = _processes.get(pid);
+
+            if (p == null)
+            {
+                updateStatistics(Statistics.Event.GET_PROCESS_MISS);
+            }
+
+            return p;
+        }
+
+        private Process getOrAddProcess(int pid)
+        {
+            Process process = getProcess(pid);
+
+            if (process == null)
+            {
+                process = addProcess(pid);
+            }
+
+            return process;
+        }
+    }
 
     // {{{ Process model //////////////////////////////////////////////////////
 
@@ -194,10 +316,7 @@ public class StracePathAnalyzer extends AAnalyzer
 
     // {{{ Private attributes /////////////////////////////////////////////////
 
-    /**
-     * Map process ID to its kept state.
-     */
-    private Map<Integer, Process> _processes = null;
+    private ProcessModel _model = null;
 
     private Statistics _statistics = null;
 
@@ -209,8 +328,8 @@ public class StracePathAnalyzer extends AAnalyzer
 
     public StracePathAnalyzer(Configuration config)
     {
-        _processes = new TreeMap<>();
         _statistics = new Statistics();
+        _model = new ProcessModel(_statistics);
         _config = config == null ? Configuration.theDefault() : config;
     }
 
@@ -269,104 +388,6 @@ public class StracePathAnalyzer extends AAnalyzer
         return file;
     }
 
-    // {{{ Process model operations ///////////////////////////////////////////
-
-    private boolean haveProcess(Integer pid)
-    {
-        return _processes.containsKey(pid);
-    }
-
-    private boolean haveProcess(int pid)
-    {
-        return haveProcess(new Integer(pid));
-    }
-
-    private Process addProcess(int pid)
-    {
-        return addProcess(Process.NO_PID, pid);
-    }
-
-    private Process addProcess(int parentPid, int pid)
-    {
-        if (haveProcess(pid))
-        {
-            throw new IllegalArgumentException("pid = " + pid);
-        }
-
-        Process parent = getProcess(parentPid);
-
-        if (parent == null)
-        {
-            parent = new Process(pid == -1 ? Process.NO_PID : pid, null);
-            _processes.put(new Integer(pid), parent);
-        }
-
-        Process child = new Process(pid, parentPid, parent.getWorkingDirectory());
-        child.setWorkingDirectory(parent.getWorkingDirectory());
-
-        _processes.put(new Integer(pid), child);
-
-        return child;
-    }
-
-    private boolean hasWorkingDirectory(int pid)
-    {
-        return getWorkingDirectory(pid) != null;
-    }
-
-    private boolean hasWorkingDirectory(Integer pid)
-    {
-        return getWorkingDirectory(pid) != null;
-    }
-
-    private String getWorkingDirectory(int pid)
-    {
-        return getWorkingDirectory(new Integer(pid));
-    }
-
-    private String getWorkingDirectory(Integer pid)
-    {
-        Process process = getProcess(pid);
-
-        if (process == null)
-        {
-            return null;
-        }
-
-        return process.getWorkingDirectory();
-    }
-
-    private Process getProcess(int pid)
-    {
-        return getProcess(new Integer(pid));
-    }
-
-    private Process getProcess(Integer pid)
-    {
-        Process p = _processes.get(pid);
-
-        if (p == null)
-        {
-            updateStatistics(Statistics.Event.GET_PROCESS_MISS);
-        }
-
-        return p;
-    }
-
-    private Process getOrAddProcess(int pid)
-    {
-        Process process = getProcess(pid);
-        
-        if (process == null)
-        {
-            process = addProcess(pid);
-        }
-
-        return process;
-    }
-
-    // }}} Process model operations ///////////////////////////////////////////
-
     // {{{ Syscall processing /////////////////////////////////////////////////
 
     private void processGetcwdAndChdirSyscalls(
@@ -386,7 +407,7 @@ public class StracePathAnalyzer extends AAnalyzer
             updateStatistics(Statistics.Event.UNREPORTED_PARSING_FAILURE);
         }
 
-        getOrAddProcess(pid).setWorkingDirectory(path);
+        _model.getOrAddProcess(pid).setWorkingDirectory(path);
     }
 
     private void processExecSyscall(
@@ -401,7 +422,7 @@ public class StracePathAnalyzer extends AAnalyzer
             return;
         }
 
-        if (!hasWorkingDirectory(pid))
+        if (!_model.hasWorkingDirectory(pid))
         {
             // Guess working directory from PWD environment variable.
             String workingDirectory = parsedData.getEnvVar("PWD");
@@ -411,10 +432,10 @@ public class StracePathAnalyzer extends AAnalyzer
                 updateStatistics(Statistics.Event.NO_PWD_ENV_VAR);
             }
 
-            getOrAddProcess(pid).setWorkingDirectory(workingDirectory);
+            _model.getOrAddProcess(pid).setWorkingDirectory(workingDirectory);
         }
 
-        getOrAddProcess(pid).setExecutable(parsedData.getPath());
+        _model.getOrAddProcess(pid).setExecutable(parsedData.getPath());
     }
 
     private String processOpenSyscall(
@@ -429,7 +450,8 @@ public class StracePathAnalyzer extends AAnalyzer
             return null;
         }
 
-        return resolvePath(getOrAddProcess(pid).getWorkingDirectory(), file);
+        return resolvePath(_model.getOrAddProcess(pid).getWorkingDirectory(),
+            file);
     }
 
     private void analyzeSyscall(StraceSyscallParsedData parsedData)
@@ -442,17 +464,20 @@ public class StracePathAnalyzer extends AAnalyzer
 
         Process process = null;
 
-        // With first call comes first process and it doesn't matter if it
+        // With first call comes first process and it doesn't matter what
+        // syscall it is, because model is empty right now.
+        //
+        // We also reduce unnecessary getProcess misses.
         if (isFirstSyscall())
         {
-            addProcess(pid);
+            _model.addProcess(pid);
         }
 
         switch (syscall)
         {
             case FORK:
                 updateStatistics(Statistics.Event.FORK_SYSCALL);
-                addProcess(pid, childPid);
+                _model.addProcess(pid, childPid);
                 break;
 
             case EXEC:
