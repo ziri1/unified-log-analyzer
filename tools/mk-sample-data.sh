@@ -90,6 +90,7 @@ main()
             "${file%.c}" \
             > "${file%.c}-stdout.out" \
             2> "${file%.c}-stderr.out"
+        sleep 0.1
         sed -r -e 's:/home/[^/"]+:/home/user:g' -i "${file%.c}-strace.out"
     done
 }
