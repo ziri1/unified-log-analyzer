@@ -112,6 +112,8 @@ public class StraceParser implements IParser
     private static final String _INTERUPTED_BY_PROCESS_STATUS_REGEX =
         "^(.*)" + _PROCESS_STATUS_CHANGED_REGEX_CORE;
 
+    private static final String _INT_ARGUMENT_REGEX = "^(-?[0-9]+)(, +)?";
+
     /**
      * Parse environment variables (key=value pairs).
      */
@@ -135,6 +137,8 @@ public class StraceParser implements IParser
         Pattern.compile(_PROCESS_STATUS_CHANGED_REGEX);
     private static final Pattern _INTERUPTED_BY_PROCESS_STATUS_PATTERN =
         Pattern.compile(_INTERUPTED_BY_PROCESS_STATUS_REGEX);
+    private static final Pattern _INT_ARGUMENT_PATTERN =
+        Pattern.compile(_INT_ARGUMENT_REGEX);
 
     // }}} Private final attributes ///////////////////////////////////////////
 
@@ -234,8 +238,10 @@ public class StraceParser implements IParser
     {
         ParsedData parsedMessage = parseTopLevel(message, _backlog);
 
-        // Backlog may contains message that was generated before currently
-        // processed one, therefore we need to process it first.
+        // Backlog may contain message, and if it does then that message was
+        // generated before currently processed one, therefore we need to
+        // process backlog first and then continue with current message so that
+        // the ordering woud be preserved.
         if (_backlog.shouldFinalize())
         {
             String backlogMessage = _backlog.doFinalize();
@@ -689,6 +695,7 @@ public class StraceParser implements IParser
         // TODO: Clean-up.
         StraceSyscallParsedData.Syscall syscall = parsedData.getSyscall();
         Pair<String, String> fileArgumentAndRest = null;
+        Pair<Integer, String> intArgumentAndRest = null;
 
         switch (syscall)
         {
@@ -713,6 +720,10 @@ public class StraceParser implements IParser
                     // known.
                     parsedData.setChildPid(new Integer(parsedData.getResult()));
                 }
+                break;
+
+            case EXIT:
+                intArgumentAndRest = parseIntArgument(args);
                 break;
 
             default:
@@ -749,6 +760,18 @@ public class StraceParser implements IParser
                 case CHDIR: // Pass-through
                 case GETCWD:
                     parsedData.setWorkingDirectory(fileArgumentAndRest.first);
+                    break;
+            }
+        }
+        else if (intArgumentAndRest != null)
+        {
+            switch (syscall)
+            {
+                case EXIT:
+                    // Don't check on intArgumentAndRest.first != null,
+                    // let NullPointerException occurre since it will indicate
+                    // logical error in parseIntArgument(String).
+                    parsedData.setExitCode(intArgumentAndRest.first.intValue());
                     break;
             }
         }
@@ -887,6 +910,20 @@ public class StraceParser implements IParser
         return ret;
     }
 
+    private static Pair<Integer, String> parseIntArgument(String str)
+    {
+        Matcher matcher = _INT_ARGUMENT_PATTERN.matcher(str);
+        Pair<Integer, String> ret = null;   // Returned on parsing error.
+
+        if(matcher.find())
+        {
+            ret = new Pair<>(
+                Integer.parseInt(matcher.group(1)),
+                matcher.group(2));
+        }
+
+        return ret;
+    }
     // }}} IParser implementation: Details ////////////////////////////////////
 
     // }}} IParser implementation /////////////////////////////////////////////
