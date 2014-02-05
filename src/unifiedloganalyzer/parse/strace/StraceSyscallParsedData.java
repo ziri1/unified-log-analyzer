@@ -27,6 +27,7 @@ public class StraceSyscallParsedData extends AParsedData
         ACCESS,
         CHDIR,
         EXEC,
+        EXIT,
         FORK,
         FSTAT,
         GETCWD,
@@ -37,6 +38,7 @@ public class StraceSyscallParsedData extends AParsedData
         STATFS,
         UNKNOWN;    // Leave as last, sort the rest.
 
+        @Override
         public void appendTo(Appendable buff) throws IOException
         {
             buff.append(this.toString());
@@ -97,6 +99,11 @@ public class StraceSyscallParsedData extends AParsedData
                 case "statfs64":
                     syscall = Syscall.STATFS;
                     break;
+
+                case "exit":    // Pass-through
+                case "exit_group":
+                    syscall = Syscall.EXIT;
+                    break;
             }
 
             return syscall;
@@ -109,6 +116,7 @@ public class StraceSyscallParsedData extends AParsedData
         POINTER,
         UNKNOWN;
 
+        @Override
         public void appendTo(Appendable buff) throws IOException
         {
             buff.append(this.toString());
@@ -121,6 +129,7 @@ public class StraceSyscallParsedData extends AParsedData
         UNFINISHED_CALL,
         RESUMED_CALL;
 
+        @Override
         public void appendTo(Appendable buff) throws IOException
         {
             buff.append(this.toString());
@@ -144,6 +153,7 @@ public class StraceSyscallParsedData extends AParsedData
     private String _workingDirectory = null;
     private Map<String, String> _environment = null;
     private String[] _commandLineArgs = null;
+    private int _exitCode = -1;
 
     // }}} Private attributes /////////////////////////////////////////////////
 
@@ -173,6 +183,7 @@ public class StraceSyscallParsedData extends AParsedData
     /**
      * {@inheritDoc}
      */
+    @Override
     public int getPid()
     {
         return _pid;
@@ -181,6 +192,7 @@ public class StraceSyscallParsedData extends AParsedData
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setPid(int pid)
     {
         _pid = pid;
@@ -189,6 +201,7 @@ public class StraceSyscallParsedData extends AParsedData
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean hasPid()
     {
         return _pid >= 0;
@@ -201,6 +214,7 @@ public class StraceSyscallParsedData extends AParsedData
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getPath()
     {
         return _path;
@@ -209,6 +223,7 @@ public class StraceSyscallParsedData extends AParsedData
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setPath(String path)
     {
         _path = path;
@@ -217,6 +232,7 @@ public class StraceSyscallParsedData extends AParsedData
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean hasPath()
     {
         return _path != null;
@@ -335,10 +351,35 @@ public class StraceSyscallParsedData extends AParsedData
     {
         if (_environment == null)
         {
-            _environment = new HashMap<String, String>();
+            _environment = new HashMap<>();
         }
 
         _environment.put(name, value);
+    }
+
+    /**
+     * Gets exit code of a process that made this syscall.
+     *
+     * Syscalls like exit() and exit_group() take process exit code as an
+     * argument and parser should store it here.
+     *
+     * @return
+     *   Exit code of a process that made this syscall.
+     */
+    public int getExitCode()
+    {
+        return _exitCode;
+    }
+
+    /**
+     * Sets exit code of a process that made this syscall.
+     *
+     * @param exitCode
+     *   Exit code of a process that made this syscall.
+     */
+    public void setExitCode(int exitCode)
+    {
+        _exitCode = exitCode;
     }
 
     // }}} Getters and setters ////////////////////////////////////////////////
@@ -375,10 +416,16 @@ public class StraceSyscallParsedData extends AParsedData
         return _errno != null;
     }
 
+    public boolean hasExitCode()
+    {
+        return _exitCode >= 0;
+    }
+
     // }}} Predicates /////////////////////////////////////////////////////////
 
     // {{{ Implementation of abstract methods /////////////////////////////////
 
+    @Override
     public void appendRestTo(Appendable buff) throws IOException
     {
         buff.append(", syscall = ");
@@ -473,6 +520,10 @@ public class StraceSyscallParsedData extends AParsedData
             buff.append("  ]");
         }
         buff.append('\n');
+
+        buff.append(", exitCode = ")
+            .append(Integer.toString(_exitCode))
+            .append('\n');
     }
 
     // }}} Implementation of abstract methods /////////////////////////////////
