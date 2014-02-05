@@ -2,6 +2,8 @@ package unifiedloganalyzer.analyze.path.strace;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +37,24 @@ public class StracePathAnalyzer extends AAnalyzer
 
     private static class Process implements IHasPid, IAppendTo
     {
+        private static class OpenedFile
+        {
+            public String path = null;
+            public int openCount = 0;
+            public int closeCount = 0;
+            public int failedOpenCount = 0;
+
+            public OpenedFile(String path)
+            {
+                this.path = path;
+            }
+
+            public boolean isClosed()
+            {
+                return this.openCount == this.closeCount;
+            }
+        }
+
         /**
          * Any negative value can be used for its value.
          */
@@ -51,6 +71,7 @@ public class StracePathAnalyzer extends AAnalyzer
         private String _executable = null;
         private String _workingDirectory = null;
         private int _exitCode = NO_EXIT_CODE;
+        private Map<String, OpenedFile> _openedFiles = null;
 
         // TODO: Queue of calls waiting to be resumend.
 
@@ -73,6 +94,7 @@ public class StracePathAnalyzer extends AAnalyzer
             _pid = pid;
             _parentPid = parentPid;
             _workingDirectory = workingDirectory;
+            _openedFiles = new HashMap<>();
         }
 
         /**
@@ -188,6 +210,45 @@ public class StracePathAnalyzer extends AAnalyzer
         }
 
         // }}} Predicates /////////////////////////////////////////////////////
+
+        // {{{ Open files operations //////////////////////////////////////////
+
+        public void openedFile(String path, int result)
+        {
+            OpenedFile file;
+
+            if (_openedFiles.containsKey(path))
+            {
+                file = _openedFiles.put(path, new OpenedFile(path));
+            }
+            else
+            {
+                file = _openedFiles.get(path);
+            }
+
+            if (result > 0)
+            {
+                // Initial value of openCount is zero, so this is safe even for
+                // the time when we create new entry.
+                file.openCount++;
+            }
+            else
+            {
+                file.failedOpenCount++;
+            }
+        }
+
+        public void closedFile(String path)
+        {
+            _openedFiles.get(path).closeCount++;
+        }
+
+        public Collection<OpenedFile> getOpenFiles()
+        {
+            return _openedFiles.values();
+        }
+
+        // }}} Open files operations //////////////////////////////////////////
 
         // {{{ IAppendTo //////////////////////////////////////////////////////
 
