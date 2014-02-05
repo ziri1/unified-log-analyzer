@@ -101,7 +101,7 @@ class Statistics implements IOutputMessage
         /**
          * Process not found in model while trying to remove it.
          */
-        REMOVE_PROCESS_MISS,
+        TERMINATE_PROCESS_MISS,
 
         /**
          * Model doesn't know working directory of a process.
@@ -142,7 +142,7 @@ class Statistics implements IOutputMessage
     private int _chdirCount = 0;
 
     private int _getProcessMissesCount = 0;
-    private int _removeProcessMissesCount = 0;
+    private int _terminateProcessMissesCount = 0;
     private int _wdMissesCount = 0;
 
     private int _pwdEnvVarMissesCount = 0;
@@ -194,8 +194,8 @@ class Statistics implements IOutputMessage
             case GET_PROCESS_MISS:
                 _getProcessMissesCount++;
                 break;
-            case REMOVE_PROCESS_MISS:
-                this._removeProcessMissesCount++;
+            case TERMINATE_PROCESS_MISS:
+                _terminateProcessMissesCount++;
                 break;
             case WORKING_DIRECTORY_MISS:
                 _wdMissesCount++;
@@ -257,7 +257,7 @@ class Statistics implements IOutputMessage
             .append("\n, getProcessMisses = ")
                 .append(Integer.toString(_getProcessMissesCount))
             .append("\n, removeProcessMisses = ")
-                .append(Integer.toString(_removeProcessMissesCount))
+                .append(Integer.toString(_terminateProcessMissesCount))
             .append("\n, workingDirectoryMisses = ")
                 .append(Integer.toString(_wdMissesCount))
             .append("\n, pwdEnvVarMisses = ")

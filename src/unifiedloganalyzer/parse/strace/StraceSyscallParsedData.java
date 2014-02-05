@@ -1,7 +1,6 @@
 package unifiedloganalyzer.parse.strace;
 
 import java.io.IOException;
-import java.lang.Appendable;
 import java.util.HashMap;
 import java.util.Map;
 

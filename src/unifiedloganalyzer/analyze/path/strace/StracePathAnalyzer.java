@@ -1,7 +1,9 @@
 package unifiedloganalyzer.analyze.path.strace;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.TreeMap;
+import java.util.List;
 import java.util.Map;
 //import java.util.Stack;
 
@@ -38,10 +40,17 @@ public class StracePathAnalyzer extends AAnalyzer
          */
         public static final int NO_PID = -2;
 
+        /**
+         * Exit code is non-negative integer, so negative value indicate that
+         * it's not present.
+         */
+        public static final int NO_EXIT_CODE = -1;
+
         private int _pid = NO_PID;
         private int _parentPid = NO_PID;
         private String _executable = null;
         private String _workingDirectory = null;
+        private int _exitCode = NO_EXIT_CODE;
 
         // TODO: Queue of calls waiting to be resumend.
 
@@ -154,6 +163,16 @@ public class StracePathAnalyzer extends AAnalyzer
             _workingDirectory = workingDirectory;
         }
 
+        public int getExitCode()
+        {
+            return _exitCode;
+        }
+
+        public void setExitCode(int exitCode)
+        {
+            _exitCode = exitCode;
+        }
+
         // }}} Getters and setters ////////////////////////////////////////////
 
         // {{{ Predicates /////////////////////////////////////////////////////
@@ -169,6 +188,8 @@ public class StracePathAnalyzer extends AAnalyzer
         }
 
         // }}} Predicates /////////////////////////////////////////////////////
+
+        // {{{ IAppendTo //////////////////////////////////////////////////////
 
         /**
          * {@inheritDoc}
@@ -191,47 +212,65 @@ public class StracePathAnalyzer extends AAnalyzer
 
                 .append("}\n");
         }
+
+        // }}} IAppendTo //////////////////////////////////////////////////////
     }
 
     private static class ProcessModel
     {
+        /**
+         * Reference to analysis statistics.
+         *
+         * It might be good idea to split analysis statistics in to more
+         * classes where ProcessModelStatistics would be one of them.
+         */
         private Statistics _statistics = null;
 
         /**
-         * Map process ID to its kept state.
+         * Map of running processes with PID as key (process ID) and its state
+         * as value.
          */
         private Map<Integer, Process> _processes = null;
+
+        /**
+         * List of already terminated processes.
+         *
+         * This is kept for later analysis, but we can't use Map, because
+         * PIDs can be reused.
+         */
+        private List<Process> _terminatedProcesses = null;
 
         public ProcessModel(Statistics statistics)
         {
             _statistics = statistics;
             _processes = new TreeMap<>();
+            _terminatedProcesses = new ArrayList<>();
         }
 
         /**
-        * Update statistics with specified event.
-        *
-        * @param event
-        *   Event that occurred and statistics are kept for.
-        */
+         * Update statistics with specified event.
+         *
+         * @param event
+         *   Event that occurred and statistics are kept for.
+         */
         private void updateStatistics(Statistics.Event event)
         {
             _statistics.update(event);
         }
 
-        private boolean hasProcess(int pid)
+        private boolean processExists(int pid)
         {
             return _processes.containsKey(pid);
         }
 
-        private Process addProcess(int pid)
+        private Process createProcess(int pid)
         {
-            return addProcess(Process.NO_PID, pid);
+            return createProcess(Process.NO_PID, pid);
         }
 
-        private Process addProcess(int parentPid, int pid)
+        private Process createProcess(int parentPid, int pid)
         {
-            if (hasProcess(pid))
+            if (processExists(pid))
             {
                 throw new IllegalArgumentException("pid = " + pid);
             }
@@ -253,11 +292,26 @@ public class StracePathAnalyzer extends AAnalyzer
             return child;
         }
 
-        private void removeProcess(int pid)
+        /**
+         * Remove process from the collection of running processes.
+         *
+         * @param pid
+         *   ID (PID) of process that terminated.
+         * @param exitCode
+         *   Exit code of the process that terminated.
+         */
+        private void terminateProcess(int pid, int exitCode)
         {
-            if (_processes.remove(pid) == null)
+            Process process = _processes.remove(pid);
+
+            if (process == null)
             {
-                this.updateStatistics(Statistics.Event.REMOVE_PROCESS_MISS);
+                updateStatistics(Statistics.Event.TERMINATE_PROCESS_MISS);
+            }
+            else
+            {
+                _terminatedProcesses.add(process);
+                process.setExitCode(exitCode);
             }
         }
 
@@ -280,23 +334,39 @@ public class StracePathAnalyzer extends AAnalyzer
 
         private Process getProcess(int pid)
         {
-            Process p = _processes.get(pid);
+            Process process = _processes.get(pid);
 
-            if (p == null)
+            if (process == null)
             {
                 updateStatistics(Statistics.Event.GET_PROCESS_MISS);
             }
 
-            return p;
+            return process;
         }
 
-        private Process getOrAddProcess(int pid)
+        /**
+         * Gets process if it's already present in the model or adds it and
+         * then returns it in case when it's not already present in this
+         * process model.
+         *
+         * This method reports GET_PROCESS_MISS to statistics when process is
+         * not found in this model. Therefore this method should be used only
+         * in cases when nonexistence of such process in model would be
+         * a failure.
+         *
+         * @param pid
+         *   PID of the process to get or create if it is not present in this
+         *   model.
+         * @return
+         *   Process with PID pid that is present (at this point) in the model.
+         */
+        private Process getOrCreateProcess(int pid)
         {
             Process process = getProcess(pid);
 
             if (process == null)
             {
-                process = addProcess(pid);
+                process = createProcess(pid);
             }
 
             return process;
@@ -432,7 +502,7 @@ public class StracePathAnalyzer extends AAnalyzer
             updateStatistics(Statistics.Event.UNREPORTED_PARSING_FAILURE);
         }
 
-        _model.getOrAddProcess(pid).setWorkingDirectory(path);
+        _model.getOrCreateProcess(pid).setWorkingDirectory(path);
     }
 
     private void processExecSyscall(
@@ -457,10 +527,10 @@ public class StracePathAnalyzer extends AAnalyzer
                 updateStatistics(Statistics.Event.NO_PWD_ENV_VAR);
             }
 
-            _model.getOrAddProcess(pid).setWorkingDirectory(workingDirectory);
+            _model.getOrCreateProcess(pid).setWorkingDirectory(workingDirectory);
         }
 
-        _model.getOrAddProcess(pid).setExecutable(parsedData.getPath());
+        _model.getOrCreateProcess(pid).setExecutable(parsedData.getPath());
     }
 
     private String processOpenSyscall(
@@ -475,7 +545,7 @@ public class StracePathAnalyzer extends AAnalyzer
             return null;
         }
 
-        return resolvePath(_model.getOrAddProcess(pid).getWorkingDirectory(),
+        return resolvePath(_model.getOrCreateProcess(pid).getWorkingDirectory(),
             file);
     }
 
@@ -495,19 +565,29 @@ public class StracePathAnalyzer extends AAnalyzer
         // We also reduce unnecessary getProcess misses.
         if (isFirstSyscall())
         {
-            _model.addProcess(pid);
+            _model.createProcess(pid);
         }
 
         switch (syscall)
         {
             case FORK:
                 updateStatistics(Statistics.Event.FORK_SYSCALL);
-                _model.addProcess(pid, childPid);
+                _model.createProcess(pid, childPid);
                 break;
 
             case EXEC:
                 updateStatistics(Statistics.Event.EXEC_SYSCALL);
                 processExecSyscall(flag, pid, parsedData);
+                break;
+
+            case EXIT:
+                updateStatistics(Statistics.Event.EXIT_SYSCALL);
+                if (parsedData.hasExitCode())
+                {
+                    _model.terminateProcess(pid, parsedData.getExitCode());
+                }
+                // TODO: Else branch: Statistics that we weren't able to remove
+                // process.
                 break;
 
             case GETCWD:

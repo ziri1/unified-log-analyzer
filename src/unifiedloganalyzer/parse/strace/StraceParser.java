@@ -34,7 +34,7 @@ public class StraceParser implements IParser
      * passed to strace command. Note that this regex supports two formats for
      * it.
      *
-     * This regex doesn't handle interupted calls nor signals.
+     * This regex doesn't handle interrupted calls nor signals.
      */
     private static final String _TOP_LEVEL_REGEX =
         "^((([0-9]+)|\\[pid ([0-9]+)\\]) +)?(.*)$";
