@@ -43,6 +43,7 @@ public class StracePathAnalyzer extends AAnalyzer
             public int openCount = 0;
             public int closeCount = 0;
             public int failedOpenCount = 0;
+            // TODO: FDs
 
             public OpenedFile(String path)
             {
@@ -204,7 +205,7 @@ public class StracePathAnalyzer extends AAnalyzer
             return _pid >= 0;
         }
 
-        public boolean hasWrokingDirectory()
+        public boolean hasWorkingDirectory()
         {
             return _workingDirectory != null;
         }
@@ -376,23 +377,15 @@ public class StracePathAnalyzer extends AAnalyzer
             }
         }
 
-        private boolean hasWorkingDirectory(int pid)
-        {
-            return getWorkingDirectory(pid) != null;
-        }
-
-        private String getWorkingDirectory(int pid)
-        {
-            Process process = getProcess(pid);
-
-            if (process == null)
-            {
-                return null;
-            }
-
-            return process.getWorkingDirectory();
-        }
-
+        /**
+         * Gets running process from process model with specified PID.
+         *
+         * @param pid
+         *   PID (system process ID) of running process.
+         * @return
+         *   Running process with specified PID, or <code>null</code> if there
+         *   is no such running process.
+         */
         private Process getProcess(int pid)
         {
             Process process = _processes.get(pid);
@@ -578,7 +571,9 @@ public class StracePathAnalyzer extends AAnalyzer
             return;
         }
 
-        if (!_model.hasWorkingDirectory(pid))
+        Process process = _model.getOrCreateProcess(pid);
+
+        if (!process.hasWorkingDirectory())
         {
             // Guess working directory from PWD environment variable.
             String workingDirectory = parsedData.getEnvVar("PWD");
@@ -588,10 +583,10 @@ public class StracePathAnalyzer extends AAnalyzer
                 updateStatistics(Statistics.Event.NO_PWD_ENV_VAR);
             }
 
-            _model.getOrCreateProcess(pid).setWorkingDirectory(workingDirectory);
+            process.setWorkingDirectory(workingDirectory);
         }
 
-        _model.getOrCreateProcess(pid).setExecutable(parsedData.getPath());
+        process.setExecutable(parsedData.getPath());
     }
 
     private String processOpenSyscall(
@@ -601,7 +596,7 @@ public class StracePathAnalyzer extends AAnalyzer
     {
         if (flag == StraceSyscallParsedData.Flag.RESUMED_CALL)
         {
-            updateStatistics(Statistics.Event.IGNORED_SYSCALL);
+            updateStatistics(Statistics.Event.IGNORED_RESUMED_SYSCALL);
 
             return null;
         }
@@ -684,12 +679,18 @@ public class StracePathAnalyzer extends AAnalyzer
 
     // {{{ AAnalyzer, implementation of abstract methods //////////////////////
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected void processEmptyMessage(IParsedData parsedData)
     {
         runCallbacks(_statistics);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected void processParsedMessage(IParsedData parsedData)
     {
@@ -712,6 +713,9 @@ public class StracePathAnalyzer extends AAnalyzer
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected void processParseError(IParsedData parsedData)
     {
