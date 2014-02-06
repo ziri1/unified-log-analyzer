@@ -28,9 +28,10 @@ public class AnalysisChain implements IAnalyzer
             _analyzer = analyzer;
         }
 
+        @Override
         public void runCallback(IOutputMessage message)
         {
-            ParsedData parsedData = null;
+            ParsedData parsedData;
 
             if (message instanceof ParsedData)
             {
@@ -57,6 +58,14 @@ public class AnalysisChain implements IAnalyzer
 
     /**
      * First analyzer passes its result to second analyzer.
+     *
+     * @param first
+     *   Analyzer that will receive message as first and its result will be
+     *   passed to another (second) analyzer.
+     * @param second
+     *   Analyzer that will receive message from first analyzer and then
+     *   executes all callbacks that should receive result(s) from this
+     *   analysis chain.
      */
     public AnalysisChain(IAnalyzer first, IAnalyzer second)
     {
@@ -74,11 +83,19 @@ public class AnalysisChain implements IAnalyzer
 
     // {{{ IAnalyzer interface implementation /////////////////////////////////
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void registerCallback(ICallback<IOutputMessage> callback)
     {
         _secondAnalyzer.registerCallback(callback);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void analyze(ParsedData parsedData)
     {
         _firstAnalyzer.analyze(parsedData);
