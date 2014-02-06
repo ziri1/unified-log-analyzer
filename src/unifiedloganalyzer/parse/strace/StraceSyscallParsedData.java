@@ -25,6 +25,7 @@ public class StraceSyscallParsedData extends AParsedData
     {
         ACCESS,
         CHDIR,
+        CREAT,
         EXEC,
         EXIT,
         FORK,
@@ -55,6 +56,10 @@ public class StraceSyscallParsedData extends AParsedData
 
                 case "chdir":
                     syscall = Syscall.CHDIR;
+                    break;
+
+                case "creat":
+                    syscall = Syscall.CREAT;
                     break;
 
                 case "execve":

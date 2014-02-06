@@ -589,7 +589,7 @@ public class StracePathAnalyzer extends AAnalyzer
         process.setExecutable(parsedData.getPath());
     }
 
-    private String processOpenSyscall(
+    private String processOpenAndCreatSyscall(
         StraceSyscallParsedData.Flag flag,
         String file,
         int pid)
@@ -656,11 +656,12 @@ public class StracePathAnalyzer extends AAnalyzer
                 processGetcwdAndChdirSyscalls(flag, file, pid);
                 break;
 
+            case CREAT:
             case OPEN:
-                updateStatistics(Statistics.Event.OPEN_SYSCALL);
+                updateStatistics(Statistics.Event.OPEN_OR_CREAT_SYSCALL);
                 // Resolve absolute path if possible, returns null if we should
-                // ignore the open() call.
-                file = processOpenSyscall(flag, file, pid);
+                // ignore the open()/creat() call.
+                file = processOpenAndCreatSyscall(flag, file, pid);
                 if (file != null)
                 {
                     runCallbacks(

@@ -75,9 +75,9 @@ class Statistics implements IOutputMessage
         EXIT_SYSCALL,
 
         /**
-         * Received open() call.
+         * Received open() or creat() call.
          */
-        OPEN_SYSCALL,
+        OPEN_OR_CREAT_SYSCALL,
 
         /**
          * Received getcwd() call.
@@ -137,7 +137,7 @@ class Statistics implements IOutputMessage
     private int _forkCount = 0;
     private int _execCount = 0;
     private int _exitCount = 0;
-    private int _openCount = 0;
+    private int _openAndCreatCount = 0;
     private int _getcwdCount = 0;
     private int _chdirCount = 0;
 
@@ -179,8 +179,8 @@ class Statistics implements IOutputMessage
             case EXIT_SYSCALL:
                 _exitCount++;
                 break;
-            case OPEN_SYSCALL:
-                _openCount++;
+            case OPEN_OR_CREAT_SYSCALL:
+                _openAndCreatCount++;
                 break;
             case GETCWD_SYSCALL:
                 _getcwdCount++;
@@ -240,8 +240,8 @@ class Statistics implements IOutputMessage
                         .append(Integer.toString(_execCount))
                     .append("\n    , exit = ")
                         .append(Integer.toString(_exitCount))
-                    .append("\n    , open = ")
-                        .append(Integer.toString(_openCount))
+                    .append("\n    , openAndCreat = ")
+                        .append(Integer.toString(_openAndCreatCount))
                     .append("\n    , getcwd = ")
                         .append(Integer.toString(_getcwdCount))
                     .append("\n    , chdir = ")

@@ -702,6 +702,7 @@ public class StraceParser implements IParser
             // Process only syscalls that have path as their first argument.
             case ACCESS:    // Pass-through
             case CHDIR:     // Pass-through
+            case CREAT:     // Pass-through
             case EXEC:      // Pass-through
             case GETCWD:    // Pass-through
             case LSTAT:     // Pass-through
