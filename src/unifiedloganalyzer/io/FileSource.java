@@ -5,8 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.NoSuchElementException;
 
 import unifiedloganalyzer.ISource;
 
@@ -17,44 +16,51 @@ import unifiedloganalyzer.ISource;
  */
 public class FileSource implements ISource
 {
-    private File myFile = null;
-    private BufferedReader myBuffer = null;
-    private String currentLine = null;
+    private File _file = null;
+    private BufferedReader _buffer = null;
+    private String _currentLine = null;
 
-    public FileSource(String sFile, boolean isGzipped)
+    public FileSource(String file, boolean isGzipped)
+        throws FileNotFoundException, IOException
     {
-        myFile = new File(sFile);
-        try {
-            myBuffer = new BufferedReader(new FileReader(myFile));
-            currentLine = myBuffer.readLine();
-            //TODO: open file, read file line by line until EOF
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(FileSource.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(FileSource.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        _file = new File(file);
+        _buffer = new BufferedReader(new FileReader(_file));
+        _currentLine = _buffer.readLine();
     }
 
-    public FileSource(String file)
+    public FileSource(String file) throws FileNotFoundException, IOException
     {
         this(file, false);
     }
 
-    public boolean hasNext() {
-        return currentLine != null;
+    @Override
+    public boolean hasNext()
+    {
+        return _currentLine != null;
     }
 
-    public String next() {
-        String ret = currentLine;
-        try {
-            currentLine = myBuffer.readLine();
-        } catch (IOException ex) {
-            Logger.getLogger(FileSource.class.getName()).log(Level.SEVERE, null, ex);
+    @Override
+    public String next() throws NoSuchElementException, IOException
+    {
+        String ret = _currentLine;
+
+        if (!hasNext())
+        {
+            throw new NoSuchElementException();
         }
+
+        // Returns null if EOF is reached.
+        _currentLine = _buffer.readLine();
+
         return ret;
     }
 
-    public void remove() {
-        //destructive next() does this work for us
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void close() throws IOException
+    {
+        _buffer.close();
     }
 }

@@ -1,18 +1,16 @@
 package unifiedloganalyzer.io;
 
-import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
 
 import unifiedloganalyzer.IOutputMessage;
-import unifiedloganalyzer.IWriter;
+import unifiedloganalyzer.ISink;
 
 
 /**
  *
  * @author Peter Trsko
  */
-public class StdoutWriter implements IWriter
+public class StdoutSink implements ISink
 {
     private IOutputMessage _previousMessage = null;
     private int _counter = 0;
@@ -23,6 +21,11 @@ public class StdoutWriter implements IWriter
     {
         _previousMessage = message;
         _counter = message == null ? 0 : 1;
+    }
+
+    private void clearPrevious()
+    {
+        setPrevious(null);
     }
 
     private boolean havePrevious()
@@ -41,14 +44,12 @@ public class StdoutWriter implements IWriter
         {
             StringBuffer buff = new StringBuffer();
 
-            buff.append(Integer.toString(_counter));
-            buff.append(' ');
+            buff.append(_counter).append(' ');
             _previousMessage.appendTo(buff);
-            buff.append('\n');
 
             System.out.println(buff.toString());
 
-            setPrevious(null);
+            clearPrevious();
         }
     }
 
@@ -59,8 +60,9 @@ public class StdoutWriter implements IWriter
 
     // }}} Private methods ////////////////////////////////////////////////////
 
-    // {{{ IWriter implementation /////////////////////////////////////////////
+    // {{{ ISink implementation ///////////////////////////////////////////////
 
+    @Override
     public void write(IOutputMessage message) throws IOException
     {
         if (isNewMessage(message))
@@ -74,17 +76,19 @@ public class StdoutWriter implements IWriter
         }
     }
 
+    @Override
     public void flush() throws IOException
     {
         doWrite();
         System.out.flush();
     }
 
+    @Override
     public void close() throws IOException
     {
         flush();
         System.out.close();     // XXX
     }
 
-    // }}} IWriter implementation /////////////////////////////////////////////
+    // }}} ISink implementation ///////////////////////////////////////////////
 }

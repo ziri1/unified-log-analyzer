@@ -1,10 +1,7 @@
 package unifiedloganalyzer.main;
 
+import java.io.PrintStream;
 import java.util.Arrays;
-
-import unifiedloganalyzer.main.AnalysisAlgorithm;
-import unifiedloganalyzer.main.Configuration;
-import unifiedloganalyzer.main.InputFormat;
 
 
 /**
@@ -16,41 +13,89 @@ public final class ParseOptions
 {
     // {{{ Nested types ///////////////////////////////////////////////////////
 
+    private static StringBuffer usage(StringBuffer buff)
+    {
+        buff.append("Usage:\n\n")
+
+            .append("  UnifiedLogAnalyzer")
+               .append(" [--dummy|--strace|--syslog]")
+               .append(" [{-o|--output} {FILE|-}] {FILE|-}")
+               .append("\n\n")
+
+            .append("  UnifiedLogAnalyzer")
+                .append(" [{-a|--algorithm} ALGORITHM]")
+                .append(" [{-i|--input-format} INPUT_FORMAT]")
+                .append(" [{-o|--output} {FILE|-}] {FILE|-}")
+                .append("\n\n")
+
+            .append("  UnifiedLogAnalyzer")
+                .append(" {--list-input-formats|--list-algorithms}")
+                .append("\n\n")
+
+            .append("  UnifiedLogAnalyzer {-h|--help}");
+
+        return buff;
+    }
+
+    public static void printUsage(PrintStream stream)
+    {
+        stream.println(usage(new StringBuffer()).toString());
+    }
+
+    public static void usageError()
+    {
+        usageError(null);
+    }
+
+    public static void usageError(String where, String what)
+    {
+        usageError("`" + where + "': " + what);
+    }
+
+    public static void usageError(String str)
+    {
+        if (str != null)
+        {
+            System.err.println("Error: " + str);
+        }
+        printUsage(System.err);
+        System.exit(1);
+    }
+
+    public static void unsupportedInputFormat(InputFormat inputFormat)
+    {
+        System.err.println("Error: `" + inputFormat.toArgument()
+            + "': Unsupported input format.");
+        System.exit(2);
+    }
+
+    public static void analysisAlgorithmNotAvailableForThisInputFormat(
+        AnalysisAlgorithm analysisAlgorithm,
+        InputFormat inputFormat)
+    {
+        System.err.println("Error: `"
+            + analysisAlgorithm.toString()
+            + "': Analysis algorithm is not available or is not compatible"
+            + " with specified input format (in this case `"
+            + inputFormat.toArgument()
+            + "').");
+        System.exit(2);
+    }
+
     private static abstract class ProcessOption
     {
         public abstract
             boolean processOption(String[] args, Configuration config);
 
-        protected static void printUsage()
-        {
-            System.out.println((new StringBuffer())
-                .append("Usage:\n\n")
 
-                .append("  UnifiedLogAnalyzer")
-                    .append(" [--dummy|--strace|--syslog]")
-                    .append(" [{-o|--output} {FILE|-}] {FILE|-}")
-                    .append('\n')
 
-                .append("  UnifiedLogAnalyzer")
-                    .append(" [{-a|--algorithm} ALGORITHM]")
-                    .append(" [{-i|--input-format} INPUT_FORMAT]")
-                    .append(" [{-o|--output} {FILE|-}] {FILE|-}")
-                    .append('\n')
-
-                .append("  UnifiedLogAnalyzer")
-                    .append(" {--list-input-formats|--list-algorithms}")
-                    .append('\n')
-
-                .append("  UnifiedLogAnalyzer {-h|--help}")
-
-                .toString());
-        }
 
         private static class Help extends ProcessOption
         {
+            @Override
             public boolean processOption(String[] args, Configuration config)
             {
-                printUsage();
+                printUsage(System.out);
                 System.exit(0);
 
                 return true;
@@ -59,6 +104,7 @@ public final class ParseOptions
 
         private static class Dummy extends ProcessOption
         {
+            @Override
             public boolean processOption(String[] args, Configuration config)
             {
                 config.inputFormat = InputFormat.DUMMY;
@@ -70,6 +116,7 @@ public final class ParseOptions
 
         private static class Strace extends ProcessOption
         {
+            @Override
             public boolean processOption(String[] args, Configuration config)
             {
                 config.inputFormat = InputFormat.STRACE;
@@ -81,6 +128,7 @@ public final class ParseOptions
 
         private static class Syslog extends ProcessOption
         {
+            @Override
             public boolean processOption(String[] args, Configuration config)
             {
                 config.inputFormat = InputFormat.SYSLOG;
@@ -92,6 +140,7 @@ public final class ParseOptions
 
         private static class ProcessInputFormat extends ProcessOption
         {
+            @Override
             public boolean processOption(String[] args, Configuration config)
             {
                 if (args.length == 1)
@@ -114,6 +163,7 @@ public final class ParseOptions
 
         private static class ListInputFormats extends ProcessOption
         {
+            @Override
             public boolean processOption(String[] args, Configuration config)
             {
                 if (args.length != 0)
@@ -141,6 +191,7 @@ public final class ParseOptions
 
         private static class ProcessAnalysisAlgorithm extends ProcessOption
         {
+            @Override
             public boolean processOption(String[] args, Configuration config)
             {
                 if (args.length == 1)
@@ -164,6 +215,7 @@ public final class ParseOptions
 
         private static class ListAlgorithms extends ProcessOption
         {
+            @Override
             public boolean processOption(String[] args, Configuration config)
             {
                 if (args.length != 0)
@@ -195,15 +247,14 @@ public final class ParseOptions
 
         private static class InputFile extends ProcessOption
         {
+            @Override
             public boolean processOption(String[] args, Configuration config)
             {
                 if (args.length == 1)
                 {
                     if (config.inputFile != null)
                     {
-                        System.err.println("Error: `" + args[0]
-                            + "': Too many options.");
-                        System.exit(1);
+                        usageError(args[0], "Too many options.");
                     }
                     config.inputFile = args[0].equals("-") ? null : args[0];
 
@@ -216,6 +267,7 @@ public final class ParseOptions
 
         private static class OutputFile extends ProcessOption
         {
+            @Override
             public boolean processOption(String[] args, Configuration config)
             {
                 if (args.length == 1)
@@ -256,7 +308,7 @@ public final class ParseOptions
          * Select InputFormat.DUMMY and AnalysisAlgorithm.DUMMY.
          */
         DUMMY(null, "dummy", 0, ProcessOption.dummy),
-        
+
         /**
          * Select InputFormat.STRACE and
          * AnalysisAlgorithm.STRACE_PATH_ANALYSIS.
@@ -348,7 +400,7 @@ public final class ParseOptions
 
             return null;
         }
- 
+
         public boolean processOption(String[] args, Configuration config)
         {
             // Non-options will always get one argument, and that is the
@@ -412,8 +464,7 @@ public final class ParseOptions
 
             if (endIndex > args.length)
             {
-                System.err.println("Error: `" + arg +"': Missing argument(s).");
-                System.exit(1);
+                usageError(arg, "Missing argument(s).");
             }
 
             optArgs = Arrays.copyOfRange(args, startIndex, endIndex);
@@ -421,9 +472,7 @@ public final class ParseOptions
 
         if (!opt.processOption(optArgs, config))
         {
-            System.err.println("Error: `" + arg
-                + "': While processing option [and its argument(s)].");
-            System.exit(1);
+            usageError(arg, "While processing option [and its argument(s)].");
         }
 
         return opt;

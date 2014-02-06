@@ -8,29 +8,29 @@ import java.util.logging.Logger;
 import trskop.ICallback;
 
 import unifiedloganalyzer.IOutputMessage;
-import unifiedloganalyzer.IWriter;
+import unifiedloganalyzer.ISink;
 
 
 /**
- * Adapts IWriter interface to ICallback&lt;IOutputMessage&gt; while also
- * proxying IWriter interface.
+ * Adapts ISink interface to ICallback&lt;IOutputMessage&gt; while also
+ * proxying ISink interface.
  *
  * @author Peter Trsko
  */
-public class WriterCallback implements IWriter, ICallback<IOutputMessage>
+public class SinkCallback implements ISink, ICallback<IOutputMessage>
 {
-    private final IWriter _writer;
+    private final ISink _writer;
 
-    public WriterCallback(IWriter writer)
+    public SinkCallback(ISink writer)
     {
         _writer = writer;
     }
 
-    // {{{ IWriter interface implementation ///////////////////////////////////
+    // {{{ ISink interface implementation ///////////////////////////////////
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @throws IOException
      *   If an I/O error occurs.
      */
@@ -58,13 +58,13 @@ public class WriterCallback implements IWriter, ICallback<IOutputMessage>
         _writer.close();
     }
 
-    // }}} IWriter interface implementation ///////////////////////////////////
+    // }}} ISink interface implementation ///////////////////////////////////
 
     // {{{ ICallback<IOutputMessage> interface implementation /////////////////
 
     /**
      * Write analysis result.
-     * 
+     *
      * @param message
      *   Analysis result to be written.
      */
@@ -77,7 +77,7 @@ public class WriterCallback implements IWriter, ICallback<IOutputMessage>
         }
         catch (IOException ex)
         {
-            Logger.getLogger(WriterCallback.class.getName())
+            Logger.getLogger(SinkCallback.class.getName())
                 .log(Level.SEVERE, null, ex);
         }
     }

@@ -10,14 +10,14 @@ import java.io.IOException;
  *
  * @author Kamil Cupr
  */
-public interface IWriter extends Closeable, Flushable
+public interface ISink extends Closeable, Flushable
 {
     /**
      * Write message to backend (file, pipe, etc.).
      *
      * @param message
      *   Message to write.
-     * 
+     *
      * @throws IOException
      *   If an I/O error occurs.
      */

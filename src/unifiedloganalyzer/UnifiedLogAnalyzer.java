@@ -1,16 +1,17 @@
 package unifiedloganalyzer;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import unifiedloganalyzer.adapter.AnalyzerCallback;
-import unifiedloganalyzer.adapter.WriterCallback;
+import unifiedloganalyzer.adapter.SinkCallback;
 import unifiedloganalyzer.analyze.DummyAnalyzer;
 import unifiedloganalyzer.analyze.path.strace.StracePathAnalyzer;
 import unifiedloganalyzer.io.FileSource;
-import unifiedloganalyzer.io.FileWriter;
-import unifiedloganalyzer.io.StdoutWriter;
+import unifiedloganalyzer.io.FileSink;
+import unifiedloganalyzer.io.StdoutSink;
 import unifiedloganalyzer.parse.DummyParser;
 import unifiedloganalyzer.parse.strace.StraceParser;
 
@@ -29,20 +30,36 @@ public class UnifiedLogAnalyzer
 {
     // {{{ Core algorithm /////////////////////////////////////////////////////
 
+    /**
+     * Core algorithm without the plumbing that was left in main.
+     *
+     * @param source
+     *   Object used as source of messages.
+     * @param parser
+     *   Object implementing parsing algorithm of source messages.
+     * @param analyzer
+     *   Object implementing analysis algorithm.
+     * @param sink
+     *   Object used as sink for the analysis result(s).
+     *
+     * @throws IOException
+     *   If any source, parser, analyzer or writer method encounters I/O
+     *   exception.
+     */
     public static void doMain(
         ISource source,
         IParser parser,
         IAnalyzer analyzer,
-        IWriter writer) throws IOException
+        ISink sink) throws IOException
     {
         parser.registerCallback(new AnalyzerCallback(analyzer));
-        analyzer.registerCallback(new WriterCallback(writer));
+        analyzer.registerCallback(new SinkCallback(sink));
 
         while (source.hasNext()) {
             parser.parse(source.next());
         }
         parser.eof();
-        writer.close();
+        sink.close();
     }
 
     // }}} Core algorithm /////////////////////////////////////////////////////
@@ -60,7 +77,8 @@ public class UnifiedLogAnalyzer
      *
      * TODO: StdinSource.
      */
-    private static ISource sourceFactory(String fileName) throws IOException
+    private static ISource sourceFactory(String fileName)
+        throws FileNotFoundException, IOException
     {
         if (fileName == null)
         {
@@ -113,16 +131,19 @@ public class UnifiedLogAnalyzer
     }
 
     /**
-     * Select appropriate IWriter implementation.
+     * Select appropriate ISink implementation.
+     *
+     * @throws NoSuchFileException
      */
-    private static IWriter writerFactory(String fileName) throws IOException
+    private static ISink sinkFactory(String fileName)
+        throws FileNotFoundException, IOException
     {
         if (fileName == null)
         {
-            return new StdoutWriter();
+            return new StdoutSink();
         }
 
-        return new FileWriter(fileName, fileName.matches(_IS_GZIPPED_REGEX));
+        return new FileSink(fileName, fileName.matches(_IS_GZIPPED_REGEX));
     }
 
     // }}} Factory methods ////////////////////////////////////////////////////
@@ -143,8 +164,8 @@ public class UnifiedLogAnalyzer
             {
                 if (config.inputFile == null)
                 {
-                    System.err.println("Error: Using stdin as input is not"
-                        + " currently supported");
+                    System.err.println(
+                        "Error: `stdin': Currently not supported.");
                     System.exit(2);
                 }
                 else
@@ -153,8 +174,8 @@ public class UnifiedLogAnalyzer
                 }
             }
 
-            IWriter writer = writerFactory(config.outputFile);
-            if (writer == null)
+            ISink sink = sinkFactory(config.outputFile);
+            if (sink == null)
             {
                 throw new NullPointerException("writer");
             }
@@ -162,9 +183,7 @@ public class UnifiedLogAnalyzer
             IParser parser = parserFactory(config.inputFormat);
             if (parser == null)
             {
-                System.err.println("Error: " + config.inputFormat.toString()
-                    + ": Unsupported input format.");
-                System.exit(2);
+                ParseOptions.unsupportedInputFormat(config.inputFormat);
             }
 
             IAnalyzer analyzer = analyzerFactory(
@@ -172,20 +191,20 @@ public class UnifiedLogAnalyzer
                 config.analysisAlgorithm);
             if (parser == null)
             {
-                System.err.println("Error: "
-                    + config.analysisAlgorithm.toString()
-                    + ": Analysis algorithm is not available or is not"
-                    + " compatible with specified input format ("
-                    + config.inputFormat.toString()
-                    + ").");
-                System.exit(2);
+                ParseOptions.analysisAlgorithmNotAvailableForThisInputFormat(
+                    config.analysisAlgorithm,
+                    config.inputFormat);
             }
 
-            doMain(source, parser, analyzer, writer);
+            doMain(source, parser, analyzer, sink);
+        }
+        catch (FileNotFoundException ex)
+        {
+            ParseOptions.usageError(config.inputFile, "Input file not found.");
         }
         catch (IOException ex)
         {
-            Logger.getLogger(WriterCallback.class.getName())
+            Logger.getLogger(SinkCallback.class.getName())
                 .log(Level.SEVERE, null, ex);
         }
     }
