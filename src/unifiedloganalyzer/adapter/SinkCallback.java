@@ -1,7 +1,6 @@
 package unifiedloganalyzer.adapter;
 
 import java.io.IOException;
-import java.lang.Appendable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
