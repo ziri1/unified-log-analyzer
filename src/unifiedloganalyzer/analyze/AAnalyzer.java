@@ -11,7 +11,7 @@ import unifiedloganalyzer.utils.CallbacksManager;
 
 /**
  * Abstract implementation of IAnalyzer that simplifies implementation of
- * concrete analyzers.
+ * concrete analysers.
  *
  * @author Peter Trsko
  */
@@ -83,7 +83,7 @@ public abstract class AAnalyzer implements IAnalyzer
      * Notify registered objects with analysis results.
      *
      * @param message
-     *   Analysis result passed to resitered callback(s).
+     *   Analysis result passed to registered callback(s).
      */
     protected void runCallbacks(IOutputMessage message)
     {
@@ -95,7 +95,7 @@ public abstract class AAnalyzer implements IAnalyzer
      *
      * @param parsedData
      *   <code>null</code> or some specific message, depending on the protocol
-     *   that between this analyzer and object that sent this message.
+     *   that is between this analyser and object that sent this message.
      */
     protected abstract void processEmptyMessage(IParsedData parsedData);
 
