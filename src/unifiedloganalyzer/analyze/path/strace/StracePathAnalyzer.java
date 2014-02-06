@@ -12,6 +12,7 @@ import java.util.Map;
 import trskop.IAppendTo;
 import trskop.utils.AppendableLike;
 
+import unifiedloganalyzer.IOutputMessage;
 import unifiedloganalyzer.IParsedData;
 import unifiedloganalyzer.analyze.AAnalyzer;
 import unifiedloganalyzer.analyze.path.PathCompoundMessage;
@@ -605,15 +606,47 @@ public class StracePathAnalyzer extends AAnalyzer
             file);
     }
 
+    private Statistics.Event syscallToStatisticsEvent(
+        StraceSyscallParsedData.Syscall syscall)
+    {
+        switch (syscall)
+        {
+            case FORK:
+                return Statistics.Event.FORK_SYSCALL;
+            case EXEC:
+                return Statistics.Event.EXEC_SYSCALL;
+            case EXIT:
+                return Statistics.Event.EXIT_SYSCALL;
+            case GETCWD:
+                return Statistics.Event.GETCWD_SYSCALL;
+            case CHDIR:
+                return Statistics.Event.CHDIR_SYSCALL;
+            case CREAT:
+                return Statistics.Event.CREAT_SYSCALL;
+            case OPEN:
+                return Statistics.Event.OPEN_SYSCALL;
+            default:
+                return Statistics.Event.IGNORED_SYSCALL;
+        }
+    }
+
+    private IOutputMessage outputMessageFactory(
+        String file,
+        IParsedData parsedData)
+    {
+        if (_config.shouldPreserveParsedData())
+        {
+            return new PathCompoundMessage(file, parsedData);
+        }
+
+        return new PathOutputMessage(file);
+    }
+
     private void analyzeSyscall(StraceSyscallParsedData parsedData)
     {
         StraceSyscallParsedData.Syscall syscall = parsedData.getSyscall();
-        int pid = parsedData.getPid();
-        int childPid = parsedData.getChildPid();
-        String file = parsedData.getPath();
         StraceSyscallParsedData.Flag flag = parsedData.getFlag();
-
-        Process process = null;
+        int pid = parsedData.getPid();
 
         // With first call comes first process and it doesn't matter what
         // syscall it is, because model is empty right now.
@@ -624,20 +657,19 @@ public class StracePathAnalyzer extends AAnalyzer
             _model.createProcess(pid);
         }
 
+        updateStatistics(syscallToStatisticsEvent(syscall));
+
         switch (syscall)
         {
             case FORK:
-                updateStatistics(Statistics.Event.FORK_SYSCALL);
-                _model.createProcess(pid, childPid);
+                _model.createProcess(pid, parsedData.getChildPid());
                 break;
 
             case EXEC:
-                updateStatistics(Statistics.Event.EXEC_SYSCALL);
                 processExecSyscall(flag, pid, parsedData);
                 break;
 
             case EXIT:
-                updateStatistics(Statistics.Event.EXIT_SYSCALL);
                 if (parsedData.hasExitCode())
                 {
                     _model.terminateProcess(pid, parsedData.getExitCode());
@@ -646,33 +678,23 @@ public class StracePathAnalyzer extends AAnalyzer
                 // process.
                 break;
 
-            case GETCWD:
-                updateStatistics(Statistics.Event.GETCWD_SYSCALL);
-                processGetcwdAndChdirSyscalls(flag, file, pid);
-                break;
-
+            case GETCWD:    // Pass-through
             case CHDIR:
-                updateStatistics(Statistics.Event.CHDIR_SYSCALL);
-                processGetcwdAndChdirSyscalls(flag, file, pid);
+                processGetcwdAndChdirSyscalls(flag,
+                    parsedData.getWorkingDirectory(), pid);
                 break;
 
-            case CREAT:
+            case CREAT:     // Pass-through
             case OPEN:
-                updateStatistics(Statistics.Event.OPEN_OR_CREAT_SYSCALL);
                 // Resolve absolute path if possible, returns null if we should
                 // ignore the open()/creat() call.
-                file = processOpenAndCreatSyscall(flag, file, pid);
+                String file =
+                    processOpenAndCreatSyscall(flag, parsedData.getPath(), pid);
                 if (file != null)
                 {
-                    runCallbacks(
-                        _config.shouldPreserveParsedData()
-                        ? new PathCompoundMessage(file, parsedData)
-                        : new PathOutputMessage(file));
+                    runCallbacks(outputMessageFactory(file, parsedData));
                 }
                 break;
-
-            default:
-                updateStatistics(Statistics.Event.IGNORED_SYSCALL);
         }
     }
 
