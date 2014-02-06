@@ -8,8 +8,10 @@ import unifiedloganalyzer.ParsedData;
 
 
 /**
+ * Adapter that provides ICallback&lt;ParsedData&gt; interface implementation
+ * for IAnalyzer instances, while keeping IAnalyzer interface available too.
  *
- * @author TP000001 (Peter Trsko)
+ * @author Peter Trsko
  */
 public class AnalyzerCallback implements IAnalyzer, ICallback<ParsedData>
 {
@@ -17,6 +19,14 @@ public class AnalyzerCallback implements IAnalyzer, ICallback<ParsedData>
 
     // {{{ Constructors ///////////////////////////////////////////////////////
 
+    /**
+     * Construct AnalyzerCallback adapter using specified analyzer as its
+     * backend.
+     *
+     * @param analyzer
+     *   Concrete analyzer that will be extended with
+     *   ICallback&lt;ParsedData&gt; interface.
+     */
     public AnalyzerCallback(IAnalyzer analyzer)
     {
         _analyzer = analyzer;
@@ -28,13 +38,13 @@ public class AnalyzerCallback implements IAnalyzer, ICallback<ParsedData>
 
     /**
      * Analyze parsed message.
-     * 
+     *
      * This method is invoked by the object to which this instance is
      * registered to.
-     * 
+     *
      * @param message
      *   Parsed message to be analyzed.
-     * 
+     *
      * @see unifiedloganalyzer.IRegisterCallbacks
      */
     @Override
@@ -59,7 +69,7 @@ public class AnalyzerCallback implements IAnalyzer, ICallback<ParsedData>
     /**
      * Register object that should be notified when analysis result(s) will be
      * available.
-     * 
+     *
      * @param callback
      *   Object to be notified when analysis result(s) will be available.
      */
