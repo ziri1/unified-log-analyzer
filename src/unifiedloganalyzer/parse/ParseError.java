@@ -2,8 +2,6 @@ package unifiedloganalyzer.parse;
 
 import java.io.IOException;
 
-import unifiedloganalyzer.parse.AParsedData;
-
 
 /**
  * Parsing failed.
@@ -27,12 +25,12 @@ public class ParseError extends AParsedData
 
     // {{{ Getters and setters ////////////////////////////////////////////////
 
-    public String getError()
+    public final String getError()
     {
         return _error;
     }
 
-    protected void setError(String error)
+    protected final void setError(String error)
     {
         _error = error;
     }
@@ -41,6 +39,7 @@ public class ParseError extends AParsedData
 
     // {{{ Concrete implementation of AParsedData /////////////////////////////
 
+    @Override
     public void appendRestTo(Appendable buff) throws IOException
     {
         buff.append(", error = ")

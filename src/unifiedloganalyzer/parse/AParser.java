@@ -20,7 +20,7 @@ public abstract class AParser implements IParser
 
     public AParser()
     {
-        _callbacksManager = new CallbacksManager<ParsedData>();
+        _callbacksManager = new CallbacksManager<>();
     }
 
     public AParser(ICallback<ParsedData> callback)
@@ -35,6 +35,7 @@ public abstract class AParser implements IParser
     /**
      * {@inheritDoc}
      */
+    @Override
     public void registerCallback(ICallback<ParsedData> callback)
     {
         _callbacksManager.registerCallback(callback);

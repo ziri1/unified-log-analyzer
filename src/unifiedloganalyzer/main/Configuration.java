@@ -1,8 +1,5 @@
 package unifiedloganalyzer.main;
 
-import unifiedloganalyzer.main.InputFormat;
-import unifiedloganalyzer.main.AnalysisAlgorithm;
-
 
 /**
  * Internal application configuration produced by parsing command line options.

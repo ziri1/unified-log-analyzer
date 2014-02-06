@@ -2,8 +2,6 @@ package unifiedloganalyzer.parse;
 
 import java.io.IOException;
 
-import unifiedloganalyzer.parse.AParsedData;
-
 
 public class DummyParsedData extends AParsedData
 {
@@ -12,8 +10,9 @@ public class DummyParsedData extends AParsedData
         super(originalMessage);
     }
 
+    @Override
     protected void appendRestTo(Appendable buff) throws IOException
     {
-        ;   // Empty implementation.
+        // Empty implementation.
     }
 }

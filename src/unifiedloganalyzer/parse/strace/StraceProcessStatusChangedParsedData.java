@@ -1,7 +1,6 @@
 package unifiedloganalyzer.parse.strace;
 
 import java.io.IOException;
-import java.lang.Appendable;
 
 import trskop.IAppendTo;
 
@@ -78,11 +77,13 @@ public class StraceProcessStatusChangedParsedData extends AParsedData
 
     // {{{ Getters and setters ////////////////////////////////////////////////
 
+    @Override
     public int getPid()
     {
         return _pid;
     }
 
+    @Override
     public void setPid(int pid)
     {
         _pid = pid;
@@ -98,6 +99,7 @@ public class StraceProcessStatusChangedParsedData extends AParsedData
 
     // {{{ Predicates /////////////////////////////////////////////////////////
 
+    @Override
     public boolean hasPid()
     {
         return _pid != -1;
@@ -107,6 +109,7 @@ public class StraceProcessStatusChangedParsedData extends AParsedData
 
     // {{{ Implementation of abstract methods /////////////////////////////////
 
+    @Override
     public void appendRestTo(Appendable buff) throws IOException
     {
         buff.append(", pid = ")

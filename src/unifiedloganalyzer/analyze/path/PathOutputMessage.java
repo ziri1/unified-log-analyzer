@@ -40,6 +40,7 @@ public class PathOutputMessage implements IOutputMessage, IHasPath
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getPath()
     {
         return _path;
@@ -48,6 +49,7 @@ public class PathOutputMessage implements IOutputMessage, IHasPath
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setPath(String path)
     {
         _path = path;
@@ -56,6 +58,7 @@ public class PathOutputMessage implements IOutputMessage, IHasPath
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean hasPath()
     {
         return _path != null;
@@ -68,6 +71,7 @@ public class PathOutputMessage implements IOutputMessage, IHasPath
     /**
      * {@inheritDoc}
      */
+    @Override
     public void appendTo(Appendable buff) throws IOException
     {
         buff.append(_path);
@@ -76,6 +80,7 @@ public class PathOutputMessage implements IOutputMessage, IHasPath
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean messageEquals(IOutputMessage message)
     {
         if (message != null && message instanceof PathOutputMessage)

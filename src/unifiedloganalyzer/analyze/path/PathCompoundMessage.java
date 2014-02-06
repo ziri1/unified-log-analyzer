@@ -1,7 +1,5 @@
 package unifiedloganalyzer.analyze.path;
 
-import java.io.IOException;
-
 import unifiedloganalyzer.IParsedData;
 import unifiedloganalyzer.utils.CompoundMessage;
 import unifiedloganalyzer.utils.IHasPath;
@@ -31,6 +29,12 @@ public class PathCompoundMessage
         super(PathOutputMessage.empty(), parsedData);
     }
 
+    /**
+     * Create new empty instance.
+     *
+     * @return
+     *   New empty message.
+     */
     public static PathCompoundMessage empty()
     {
         return new PathCompoundMessage(null);
@@ -43,6 +47,7 @@ public class PathCompoundMessage
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getPath()
     {
         return getOutputMessage().getPath();
@@ -51,6 +56,7 @@ public class PathCompoundMessage
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setPath(String path)
     {
         getOutputMessage().setPath(path);
@@ -59,6 +65,7 @@ public class PathCompoundMessage
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean hasPath()
     {
         return getOutputMessage().hasPath();

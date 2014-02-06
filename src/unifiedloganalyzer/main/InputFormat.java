@@ -4,8 +4,8 @@ package unifiedloganalyzer.main;
 /**
  * Supported input log formats.
  *
- * This enum is used to select correct parser and limit what analyzers can be
- * used. Not every analyzer can understand all input formats.
+ * This enumeration is used to select correct parser and limit what analyzers
+ * can be used. Not every analyzer can understand all input formats.
  *
  * @author Peter Trsko
  */

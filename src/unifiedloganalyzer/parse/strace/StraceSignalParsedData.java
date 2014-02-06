@@ -49,11 +49,13 @@ public class StraceSignalParsedData extends AParsedData implements IHasPid
     }
 
 
+    @Override
     public int getPid()
     {
         return _pid;
     }
 
+    @Override
     public void setPid(int pid)
     {
         _pid = pid;
@@ -63,6 +65,7 @@ public class StraceSignalParsedData extends AParsedData implements IHasPid
 
     // {{{ Predicates /////////////////////////////////////////////////////////
 
+    @Override
     public boolean hasPid()
     {
         return _pid != -1;
@@ -72,6 +75,7 @@ public class StraceSignalParsedData extends AParsedData implements IHasPid
 
     // {{{ Implementation of abstract methods /////////////////////////////////
 
+    @Override
     public void appendRestTo(Appendable buff) throws IOException
     {
         buff.append(", signal = ")

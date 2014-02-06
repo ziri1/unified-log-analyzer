@@ -5,13 +5,16 @@ import java.io.IOException;
 
 import unifiedloganalyzer.IOutputMessage;
 import unifiedloganalyzer.IParsedData;
-import unifiedloganalyzer.utils.ICompoundMessage;
 
 
 /**
  * Message that combines IOutputMessage and IParsedData in to one.
  *
  * @author Peter Trsko
+ * @param <O>
+ *   Type of output message.
+ * @param <P>
+ *   Type of parsed data message.
  */
 public class CompoundMessage<O extends IOutputMessage, P extends IParsedData>
     implements ICompoundMessage<O, P>
@@ -27,16 +30,19 @@ public class CompoundMessage<O extends IOutputMessage, P extends IParsedData>
 
     // {{{ ICompoundMessage interface implementation ///////////////////////////
 
+    @Override
     public O getOutputMessage()
     {
         return _outputMessage;
     }
 
+    @Override
     public P getParsedData()
     {
         return _parsedData;
     }
 
+    @Override
     public String getOriginalMessage()
     {
         if (_parsedData == null)
@@ -47,6 +53,7 @@ public class CompoundMessage<O extends IOutputMessage, P extends IParsedData>
         return _parsedData.getOriginalMessage();
     }
 
+    @Override
     public void appendTo(Appendable origBuff) throws IOException
     {
         (new AppendableLike(origBuff))
@@ -72,6 +79,7 @@ public class CompoundMessage<O extends IOutputMessage, P extends IParsedData>
                 && ourOutputMessage.equals(theirOutputMessage));
     }
 
+    @Override
     public boolean messageEquals(IOutputMessage message)
     {
         IOutputMessage ourOutputMessage = getOutputMessage();
