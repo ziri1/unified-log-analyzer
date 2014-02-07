@@ -1,9 +1,13 @@
 package unifiedloganalyzer.analyze.path;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import unifiedloganalyzer.IOutputMessage;
 import unifiedloganalyzer.utils.IHasPath;
+import unifiedloganalyzer.utils.IHasTags;
+import unifiedloganalyzer.utils.Tag;
 
 
 /**
@@ -11,19 +15,49 @@ import unifiedloganalyzer.utils.IHasPath;
  *
  * @author Peter Trsko
  */
-public class PathOutputMessage implements IOutputMessage, IHasPath
+public class PathOutputMessage implements IOutputMessage, IHasPath, IHasTags
 {
     private String _path;
+    private List<Tag> _tags;
 
     // {{{ Constructors ///////////////////////////////////////////////////////
 
-    public PathOutputMessage(String path)
+    /**
+     * Construct PathOutputMessage with list of tags associated with it.
+     *
+     * @param path
+     *   File path.
+     * @param tags
+     *   List of tags associated with this object. If tags are
+     *   <code>null</code> then it is constructed with empty list of tags.
+     */
+    public PathOutputMessage(String path, List<Tag> tags)
     {
         _path = path;
+
+        if (tags == null)
+        {
+            _tags = new ArrayList<>();
+        }
+        else
+        {
+            _tags = tags;
+        }
     }
 
     /**
-     * Produce empty instance.
+     * Construct PathOutputMessage without any tags associated with it.
+     *
+     * @param path
+     *   File path.
+     */
+    public PathOutputMessage(String path)
+    {
+        this(path, null);
+    }
+
+    /**
+     * Produce empty instance where path is set to <code>null</code>.
      *
      * @return
      *   New PathOutputMessage instance with path set to <code>null</code>.
@@ -74,7 +108,25 @@ public class PathOutputMessage implements IOutputMessage, IHasPath
     @Override
     public void appendTo(Appendable buff) throws IOException
     {
-        buff.append(_path);
+        buff.append("{path=\"")
+            .append(_path)
+            .append("\", tags=[");
+
+        boolean isFirstTag = true;
+        for (Tag tag : _tags)
+        {
+            if (isFirstTag)
+            {
+                isFirstTag = false;
+            }
+            else
+            {
+                buff.append(", ");
+            }
+            tag.appendTo(buff);
+        }
+
+        buff.append("]}");
     }
 
     /**
@@ -97,4 +149,27 @@ public class PathOutputMessage implements IOutputMessage, IHasPath
     }
 
     // }}} IOutputMessage interface implementation ////////////////////////////
+
+    // {{{ IHasTags interface implementation //////////////////////////////////
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean hasTags()
+    {
+        return !_tags.isEmpty();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<Tag> getTags()
+    {
+        return _tags;
+    }
+
+    // }}} IHasTags interface implementation //////////////////////////////////
+
 }
