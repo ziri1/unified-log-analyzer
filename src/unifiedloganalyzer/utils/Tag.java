@@ -18,6 +18,8 @@ public class Tag implements IHasTags, IAppendTo
     private final String[] _name;
     private final String _value;
 
+    // {{{ Constructors ///////////////////////////////////////////////////////
+
     /**
      * Construct tag in form name=value.
      *
@@ -54,6 +56,74 @@ public class Tag implements IHasTags, IAppendTo
         _name = name;
         _value = value;
     }
+
+    /**
+     * Create tag with name split in to prefix and name (suffix).
+     *
+     * @param prefix
+     *   Prefix of hierarchical name of this tag. It may not be
+     *   <code>null</code>, but it may be without elements, i.e. of zero
+     *   length. Any present element has to be non <code>null</code> and non
+     *   empty string.
+     * @param name
+     *   Hierarchical name (suffix) of this tag. It neither may be
+     *   <code>null</code> nor any of its elements can be <code>null</code> or
+     *   empty strings.
+     * @param value
+     *   Value of this tag. It may not be <code>null</code>, but it may be an
+     *   empty string.
+     */
+    public Tag(String[] prefix, String[] name, String value)
+    {
+        this(qualifiedName(prefix, name), value);
+    }
+
+    /**
+     * Create qualified name from prefix and name (suffix).
+     *
+     * @param prefix
+     *   Tag name prefix. Can not be <code>null</code> but may be of zero
+     *   length.
+     * @param name
+     *   Tag name suffix. Can not be <code>null</code> and has to contain at
+     *   least one element.
+     * @return
+     *   New array that is concatenation of both, prefix and name.
+     */
+    private static String[] qualifiedName(String[] prefix, String[] name)
+    {
+        String[] ret;
+        int i;
+
+        if (prefix == null || name == null)
+        {
+            throw new IllegalArgumentException(
+                "Argument " + (prefix == null ? "prefix" : "name")
+                + " has to be specified, i.e. not null.");
+        }
+
+        if (name.length == 0)
+        {
+            throw new IllegalArgumentException(
+                "Argument name has to have at least one element.");
+        }
+
+        ret = new String[prefix.length + name.length];
+
+        i = 0;
+        for (String elem : prefix)
+        {
+            ret[i++] = elem;
+        }
+        for (String elem : name)
+        {
+            ret[i++] = elem;
+        }
+
+        return ret;
+    }
+
+    // }}} Constructors ///////////////////////////////////////////////////////
 
     /**
      * Gets name of this tag.
