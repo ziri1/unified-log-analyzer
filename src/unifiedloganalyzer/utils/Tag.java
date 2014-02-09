@@ -171,6 +171,33 @@ public class Tag implements IHasTags, IAppendTo
         return ret;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void addTag(Tag tag)
+    {
+        throw new UnsupportedOperationException("Not supported opperation.");
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void addTags(Tag[] tags)
+    {
+        throw new UnsupportedOperationException("Not supported opperation.");
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void addTags(Iterable<Tag> tags)
+    {
+        throw new UnsupportedOperationException("Not supported opperation.");
+    }
+
     // }}} IHasTags interface implementation //////////////////////////////////
 
     // {{{ IAppendTo interface implementation /////////////////////////////////

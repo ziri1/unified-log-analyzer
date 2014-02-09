@@ -28,4 +28,28 @@ public interface IHasTags
      *   List of tags associated with this object.
      */
     List<Tag> getTags();
+
+    /**
+     * Adds tag to this object. Optional operation.
+     *
+     * @param tag
+     *   Tag added to this object.
+     */
+    void addTag(Tag tag);
+
+    /**
+     * Adds tags to this object. Optional operation.
+     *
+     * @param tags
+     *   Array of tags added to this object.
+     */
+    void addTags(Tag[] tags);
+
+    /**
+     * Adds tags to this object. Optional operation.
+     *
+     * @param tags
+     *   Array of tags added to this object.
+     */
+    void addTags(Iterable<Tag> tags);
 }

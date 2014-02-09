@@ -170,6 +170,66 @@ public class PathOutputMessage implements IOutputMessage, IHasPath, IHasTags
         return _tags;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void addTag(Tag tag)
+    {
+        if (tag == null)
+        {
+            throw new IllegalArgumentException("Tag has to be specified.");
+        }
+
+        _tags.add(tag);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void addTags(Tag[] tags)
+    {
+        if (tags == null)
+        {
+            throw new IllegalArgumentException("Tags has to be specified.");
+        }
+
+        for (Tag tag : tags)
+        {
+            if (tag == null)
+            {
+                throw new IllegalArgumentException(
+                    "All tags has to be non null");
+            }
+
+            _tags.add(tag);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void addTags(Iterable<Tag> tags)
+    {
+        if (tags == null)
+        {
+            throw new IllegalArgumentException("Tags has to be specified.");
+        }
+
+        for (Tag tag : tags)
+        {
+            if (tag == null)
+            {
+                throw new IllegalArgumentException(
+                    "All tags has to be non null");
+            }
+
+            _tags.add(tag);
+        }
+    }
+
     // }}} IHasTags interface implementation //////////////////////////////////
 
 }
