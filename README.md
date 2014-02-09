@@ -29,16 +29,30 @@ To Be Implemented
 Usage
 =====
 
-    $ java -cp lib/trskop-snippets.jar:dist/UnifiedLogAnalyzer.jar unifiedloganalyzer.UnifiedLogAnalyzer --help
+There is a shell wrapper provided for \*NIX/Linux systems:
+
+    bin/unifiedloganalyzer
+
+Just create symbolic link to it from any directory in your path or as an
+alternative you can add the `bin` directory where this script is stored in to
+your `$PATH`. Don't move it, because script uses its own path to find the rest.
+
+With this wrapper we can now use this software more simply:
+
+    $ unifiedloganalyzer --help
     Usage:
-    
-      UnifiedLogAnalyzer [--dummy|--strace|--syslog] [{-o|--output} {FILE|-}] {FILE|-}
-      UnifiedLogAnalyzer [{-a|--algorithm} ALGORITHM] [{-i|--input-format} INPUT_FORMAT] [{-o|--output} {FILE|-}] {FILE|-}
-      UnifiedLogAnalyzer {--list-input-formats|--list-algorithms}
-      UnifiedLogAnalyzer {-h|--help}
+
+      unifiedloganalyzer [--dummy|--strace|--syslog] [{-o|--output} {FILE|-}] {FILE|-}
+
+      unifiedloganalyzer [{-a|--algorithm} ALGORITHM] [{-i|--input-format} INPUT_FORMAT] [{-o|--output} {FILE|-}] {FILE|-}
+
+      unifiedloganalyzer {--list-input-formats|--list-algorithms}
+
+      unifiedloganalyzer {-h|--help}
 
 
 Dependencies
 ============
 
 * <https://github.com/trskop/snippets/tree/master/java>
+* <https://github.com/trskop/magic-file-java-6>

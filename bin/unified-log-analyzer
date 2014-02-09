@@ -1,0 +1,26 @@
+#!/bin/sh
+
+set -e
+
+java='java'
+
+progname="$0"
+# Directory name has to be in form "$unified_log_analyzer_home/bin".
+prefix="`dirname "$progname"`"
+# Remove the bin directory from the end.
+prefix="`dirname "$prefix"`"
+# Get canonicalized version of path stored in $prefix.
+prefix="`readlink -e "$prefix"`"
+
+class_path="$prefix/lib/trskop-snippets.jar"
+class_path="$class_path:$prefix/dist/UnifiedLogAnalyzer.jar"
+#class_path="$class_path:$prefix/lib/commons-io-2.4.jar"
+#class_path="$class_path:$prefix/lib/magic-file-java-6.jar"
+library_path="$prefix/lib"
+java_args="$prefix/lib"
+main_class='unifiedloganalyzer.UnifiedLogAnalyzer'
+
+exec "$java" \
+    -classpath "$class_path" \
+    -Djava.library.path="$library_path" \
+    "$main_class" "$@"
