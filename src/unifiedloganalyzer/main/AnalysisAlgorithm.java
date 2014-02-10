@@ -1,13 +1,22 @@
 package unifiedloganalyzer.main;
 
-import unifiedloganalyzer.main.InputFormat;
 
-
+/**
+ * Enumeration of supported analysis algorithms.
+ *
+ * @author Peter Trsko
+ */
 public enum AnalysisAlgorithm
 {
     DUMMY(),
     STRACE_PATH_ANALYSIS(InputFormat.STRACE),
-    STRACE_PATH_ANALYSIS_PARSED_DATA_PRESERVED(InputFormat.STRACE);
+    STRACE_PATH_ANALYSIS_PARSED_DATA_PRESERVED(InputFormat.STRACE),
+    MAGIC_PATH_ANALYSIS(new InputFormat[]{
+        InputFormat.DUMMY,
+        InputFormat.STRACE}),
+    MAGIC_PATH_ANALYSIS_PARSED_DATA_PRESERVED(new InputFormat[]{
+        InputFormat.DUMMY,
+        InputFormat.STRACE});
 
     /**
      * List of supported input formats.
@@ -55,7 +64,7 @@ public enum AnalysisAlgorithm
             {
                 return true;
             }
-        } 
+        }
 
         return false;
     }
@@ -85,7 +94,7 @@ public enum AnalysisAlgorithm
                     buff.append(", ");
                 }
                 buff.append(supportedInputFormat.toArgument());
-            } 
+            }
         }
 
         return buff;

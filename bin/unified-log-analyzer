@@ -14,8 +14,8 @@ prefix="`readlink -e "$prefix"`"
 
 class_path="$prefix/lib/trskop-snippets.jar"
 class_path="$class_path:$prefix/dist/UnifiedLogAnalyzer.jar"
-#class_path="$class_path:$prefix/lib/commons-io-2.4.jar"
-#class_path="$class_path:$prefix/lib/magic-file-java-6.jar"
+class_path="$class_path:$prefix/lib/commons-io-2.4.jar"
+class_path="$class_path:$prefix/lib/magic-file-java-6.jar"
 library_path="$prefix/lib"
 java_args="$prefix/lib"
 main_class='unifiedloganalyzer.UnifiedLogAnalyzer'

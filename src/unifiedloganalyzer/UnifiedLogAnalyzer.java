@@ -7,7 +7,9 @@ import java.util.logging.Logger;
 
 import unifiedloganalyzer.adapter.AnalyzerCallback;
 import unifiedloganalyzer.adapter.SinkCallback;
+import unifiedloganalyzer.analyze.AnalysisChain;
 import unifiedloganalyzer.analyze.DummyAnalyzer;
+import unifiedloganalyzer.analyze.path.MagicPathAnalyzer;
 import unifiedloganalyzer.analyze.path.strace.StracePathAnalyzer;
 import unifiedloganalyzer.io.FileSource;
 import unifiedloganalyzer.io.FileSink;
@@ -111,20 +113,40 @@ public class UnifiedLogAnalyzer
     private static IAnalyzer analyzerFactory(InputFormat inputFormat,
         AnalysisAlgorithm analysisAlgorithm)
     {
-        if (analysisAlgorithm.isSupportedForInputFormat(inputFormat))
+        StracePathAnalyzer.Configuration straceConfig =
+            StracePathAnalyzer.Configuration.theDefault();
+
+        if (!analysisAlgorithm.isSupportedForInputFormat(inputFormat))
         {
-            switch (analysisAlgorithm)
-            {
-                case DUMMY:
-                    return new DummyAnalyzer();
+            return null;
+        }
 
-                case STRACE_PATH_ANALYSIS:
-                    return new StracePathAnalyzer();
+        switch (analysisAlgorithm)
+        {
+            case DUMMY:
+                return new DummyAnalyzer();
 
-                case STRACE_PATH_ANALYSIS_PARSED_DATA_PRESERVED:
-                    return new StracePathAnalyzer(
-                        StracePathAnalyzer.Configuration.preserveParsedData());
-            }
+            case STRACE_PATH_ANALYSIS_PARSED_DATA_PRESERVED:
+                straceConfig = StracePathAnalyzer.Configuration
+                    .preserveParsedData(straceConfig);
+            case STRACE_PATH_ANALYSIS:
+                return new StracePathAnalyzer(straceConfig);
+
+            case MAGIC_PATH_ANALYSIS_PARSED_DATA_PRESERVED:
+                straceConfig = StracePathAnalyzer.Configuration
+                    .preserveParsedData(straceConfig);
+            case MAGIC_PATH_ANALYSIS:
+                MagicPathAnalyzer magicPathAnalyzer =
+                    new MagicPathAnalyzer();
+
+                if (inputFormat == InputFormat.STRACE)
+                {
+                    return new AnalysisChain(
+                        new StracePathAnalyzer(straceConfig),
+                        magicPathAnalyzer);
+                }
+
+                return magicPathAnalyzer;
         }
 
         return null;
