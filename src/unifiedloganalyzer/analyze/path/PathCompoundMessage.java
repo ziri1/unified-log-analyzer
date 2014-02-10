@@ -1,8 +1,12 @@
 package unifiedloganalyzer.analyze.path;
 
+import java.util.List;
+
 import unifiedloganalyzer.IParsedData;
 import unifiedloganalyzer.utils.CompoundMessage;
 import unifiedloganalyzer.utils.IHasPath;
+import unifiedloganalyzer.utils.IHasTags;
+import unifiedloganalyzer.utils.Tag;
 
 
 /**
@@ -15,7 +19,7 @@ import unifiedloganalyzer.utils.IHasPath;
  */
 public class PathCompoundMessage
     extends CompoundMessage<PathOutputMessage, IParsedData>
-    implements IHasPath
+    implements IHasPath, IHasTags
 {
     // {{{ Constructors ///////////////////////////////////////////////////////
 
@@ -72,4 +76,53 @@ public class PathCompoundMessage
     }
 
     // }}} IHasPath and IParsedData interface implementation //////////////////
+
+    // {{{ IHasTags interface implementation //////////////////////////////////
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean hasTags()
+    {
+        return getOutputMessage().hasTags();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<Tag> getTags()
+    {
+        return getOutputMessage().getTags();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void addTag(Tag tag)
+    {
+        getOutputMessage().addTag(tag);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void addTags(Tag[] tags)
+    {
+        getOutputMessage().addTags(tags);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void addTags(Iterable<Tag> tags)
+    {
+        getOutputMessage().addTags(tags);
+    }
+
+    // }}} IHasTags interface implementation //////////////////////////////////
 }

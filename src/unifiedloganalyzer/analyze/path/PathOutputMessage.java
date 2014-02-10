@@ -231,5 +231,4 @@ public class PathOutputMessage implements IOutputMessage, IHasPath, IHasTags
     }
 
     // }}} IHasTags interface implementation //////////////////////////////////
-
 }
