@@ -61,7 +61,7 @@ public class CompoundMessage<O extends IOutputMessage, P extends IParsedData>
             .append(_outputMessage)
             .append("\n, parsedData = ")
             .append(_parsedData)
-            .append("\n}");
+            .append('}');
     }
 
     public boolean messageEquals(ICompoundMessage<?, ?> message)
