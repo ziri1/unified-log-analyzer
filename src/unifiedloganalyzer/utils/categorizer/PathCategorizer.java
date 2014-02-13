@@ -17,7 +17,7 @@ public class PathCategorizer
 
     public PathCategorizer()
     {
-        _patternsAndActions = new HashMap();
+        _patternsAndActions = new HashMap<>();
     }
 
     public void registerAction(IPattern pattern, IAction action)

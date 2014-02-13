@@ -10,7 +10,7 @@ import unifiedloganalyzer.utils.IHasTags;
  */
 public interface IAction
 {
-    public abstract IHasTags action(
+    public abstract void action(
             IPattern pattern,
             IHasPath path,
             IHasTags tags);
