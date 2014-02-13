@@ -2,7 +2,77 @@
 
 set -e
 
-java='java'
+min_major=1
+min_minor=7
+min_patch=0
+min_update=0
+
+check_java_version()
+{
+    sed_script='2,$d;s/^java version "\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)_\([0-9]*\)".*$/'
+
+    major="`echo "$1" | sed "$sed_script"'\1/'`"
+    minor="`echo "$1" | sed "$sed_script"'\2/'`"
+    patch="`echo "$1" | sed "$sed_script"'\3/'`"
+    update="`echo "$1" | sed "$sed_script"'\4/'`"
+
+    if [ $major -gt $min_major ]; then
+        return 0
+    elif [ $major -eq $min_major ]; then
+        if [ $minor -gt $min_minor ]; then
+            return 0
+        elif [ $minor -eq $min_minor ]; then
+            if [ $patch -gt $min_patch ]; then
+                return 0
+            elif [ $patch -eq $min_patch ] && [ $update -ge $min_update ]; then
+                    return 0
+            fi
+        fi
+    fi
+
+    return 1
+}
+
+get_java_version()
+{
+    "$1" -version 2>&1 || echo ''
+}
+
+no_suitable_java()
+{
+    echo "No suitable Java installation found." 1>&2
+    echo "If you have Java installation of version 1.7.0 and above, please" \
+        "set JAVA_HOME" 1>&2
+    echo "environment variable to resolve this problem." 1>&2
+
+    exit 1
+}
+
+if [ -z "$JAVA_HOME" ]; then
+    java='java'
+    java_version="`get_java_version "$java"`"
+
+    if [ -z "$java_version" ]; then
+        for dir in /usr/lib/jvm/* /opt/java* /opt/jre*; do
+            [ ! -d $dir ] && continue
+            java="$dir/jre/bin/java"
+            java_version="`get_java_version "$java"`"
+            [ -z "$java_version" ] && continue
+            check_java_version "$java_version" || continue
+            break
+        done
+
+        if [ -z "$java_version" ]; then
+            no_suitable_java
+        fi
+    else
+        check_java_version "$java_version" || no_suitable_java
+    fi
+else
+    java="$JAVA_HOME/jre/bin/java"
+    java_version="`get_java_version "$java"`"
+    check_java_version "$java_version" || no_suitable_java
+fi
 
 progname="$0"
 # Directory name has to be in form "$unified_log_analyzer_home/bin".
@@ -13,9 +83,9 @@ prefix="`dirname "$prefix"`"
 prefix="`readlink -e "$prefix"`"
 
 class_path="$prefix/lib/trskop-snippets.jar"
-class_path="$class_path:$prefix/dist/UnifiedLogAnalyzer.jar"
 class_path="$class_path:$prefix/lib/commons-io-2.4.jar"
 class_path="$class_path:$prefix/lib/magic-file-java-6.jar"
+class_path="$class_path:$prefix/dist/UnifiedLogAnalyzer.jar"
 library_path="$prefix/lib"
 java_args="$prefix/lib"
 main_class='unifiedloganalyzer.UnifiedLogAnalyzer'
