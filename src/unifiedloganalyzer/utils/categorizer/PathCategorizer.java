@@ -11,7 +11,7 @@ import unifiedloganalyzer.utils.IHasTags;
  *
  * @author Peter Trsko
  */
-public class PathCategorizer
+public class PathCategorizer implements IPathCategorizer
 {
     private final Map<IPattern, IAction> _patternsAndActions;
 
@@ -25,6 +25,7 @@ public class PathCategorizer
         _patternsAndActions.put(pattern, action);
     }
 
+    @Override
     public void categorize(IHasPath path, IHasTags tags)
     {
         for (IPattern pattern : _patternsAndActions.keySet())
