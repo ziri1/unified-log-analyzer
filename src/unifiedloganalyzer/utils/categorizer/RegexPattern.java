@@ -7,6 +7,7 @@ import unifiedloganalyzer.utils.IHasPath;
 
 /**
  *
+ *
  * @author Peter Trsko
  */
 public class RegexPattern implements IPattern
@@ -16,11 +17,21 @@ public class RegexPattern implements IPattern
 
     public RegexPattern(String regex)
     {
-        this(Pattern.compile(regex));
+        if (regex == null)
+        {
+            throw new IllegalArgumentException("Regular expression has to be"
+                + " provided, i.e. not null.");
+        }
+        _pattern = Pattern.compile(regex);
     }
 
     public RegexPattern(Pattern pattern)
     {
+        if (pattern == null)
+        {
+            throw new IllegalArgumentException("Pattern has to be provided,"
+                + " i.e. not null.");
+        }
         _pattern = pattern;
     }
 
