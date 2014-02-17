@@ -33,32 +33,33 @@ public class PathCategoryAnalyzer extends AAnalyzer
     }
 
     private IOutputMessage categorize(
-        IHasPath path,
-        IHasTags useAsTags,
-        IOutputMessage useAsResult)
+        IHasPath receivedPath,
+        IHasTags receivedTags,
+        IOutputMessage receivedMessage)
     {
-        IHasTags tags = useAsTags;
-        IOutputMessage result = useAsResult;
+        IHasTags tags = receivedTags;
+        IOutputMessage result = receivedMessage;
 
-        if (useAsResult == null)
+        // We can't reuse received message if it's not capable of storing tags.
+        if (receivedMessage == null || receivedTags == null)
         {
             PathOutputMessage msg;
 
-            if (useAsTags == null)
+            if (receivedTags == null)
             {
-                msg = new PathOutputMessage(path.getPath());
+                msg = new PathOutputMessage(receivedPath.getPath());
             }
             else
             {
-                msg = new PathOutputMessage(path.getPath(),
-                    useAsTags.getTags());
+                msg = new PathOutputMessage(receivedPath.getPath(),
+                    receivedTags.getTags());
             }
 
             tags = msg;
             result = msg;
         }
 
-        _categorizer.categorize(path, tags);
+        _categorizer.categorize(receivedPath, tags);
 
         return result;
     }
@@ -70,6 +71,7 @@ public class PathCategoryAnalyzer extends AAnalyzer
 
         if (parsedData instanceof IOutputMessage)
         {
+            // Try to reuse received message also as output if it's possible.
             result = (IOutputMessage)parsedData;
         }
 
@@ -83,7 +85,7 @@ public class PathCategoryAnalyzer extends AAnalyzer
                 tags = (IHasTags)parsedData;
             }
 
-            categorize(path, tags, result);
+            result = categorize(path, tags, result);
         }
 
         if (result != null)
