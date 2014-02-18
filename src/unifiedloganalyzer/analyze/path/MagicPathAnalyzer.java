@@ -54,25 +54,19 @@ public class MagicPathAnalyzer extends AAnalyzer
 
     private static void analyzePathWithMagic(File file, List<Tag> tags)
     {
-        Map<Check, String> magicResult;
-
         try
         {
-            magicResult = new MagicFile(file)
+            Map<Check, String> magicResult = new MagicFile(file)
                 .characterize(Arrays.asList(Check.values()));
-        }
-        catch (IOException e)
-        {
-            magicResult = null;
-            tags.add(newPathInfoTag("magic-exception", e.toString()));
-        }
 
-        if (magicResult != null)
-        {
             for (Check check : magicResult.keySet())
             {
                 tags.add(newMagicTag(check, magicResult.get(check)));
             }
+        }
+        catch (IOException e)
+        {
+            tags.add(newPathInfoTag("magic-exception", e.toString()));
         }
     }
 
@@ -83,25 +77,19 @@ public class MagicPathAnalyzer extends AAnalyzer
 
         if (file.exists())
         {
-            String canonicalPath;
-
             tags.add(newPathInfoTag("exists", "true"));
-            analyzePathWithMagic(file, tags);
+            analyzePathWithMagic(file, tags);   // Tags are modified.
 
             try
             {
-                canonicalPath = file.getCanonicalPath();
+                tags.add(newPathInfoTag("canonical-path",
+                    // This is what may throw exception:
+                    file.getCanonicalPath()));
             }
             catch (IOException e)
             {
-                canonicalPath = null;
                 tags.add(newPathInfoTag("canonical-path-exception",
                     e.toString()));
-            }
-
-            if (canonicalPath != null)
-            {
-                tags.add(newPathInfoTag("canonical-path", canonicalPath));
             }
         }
         else
@@ -114,7 +102,7 @@ public class MagicPathAnalyzer extends AAnalyzer
 
     // {{{ Construct result ///////////////////////////////////////////////////
 
-    private static IOutputMessage constructResult(
+    private static IOutputMessage constructNewResult(
         String path,
         List<Tag> theirsTags,
         List<Tag> ourTags)
@@ -126,12 +114,82 @@ public class MagicPathAnalyzer extends AAnalyzer
         return new PathOutputMessage(path, tags);
     }
 
-    private static IOutputMessage constructResult(String path, List<Tag> tags)
+    private static IOutputMessage constructNewResult(
+        String path,
+        List<Tag> tags)
     {
         return new PathOutputMessage(path, tags);
     }
 
+    private static IOutputMessage constructResult(
+        IParsedData parsedData,
+        List<Tag> tags,
+        String path)
+    {
+        if (parsedData instanceof IHasTags)
+        {
+            if (parsedData instanceof IOutputMessage)
+            {
+                // We are reusing object we received for output as well.
+                // TODO: In some cases this might not be desirable, create
+                //       option for changing this behaviour.
+                ((IHasTags)parsedData).addTags(tags);
+
+                return (IOutputMessage)parsedData;
+            }
+
+            // Preserve original metadata, since we aren't goint to reuse
+            // received message.
+            return constructNewResult(path,
+                ((IHasTags)parsedData).getTags(), tags);
+        }
+
+        // TODO: Handle instanceof ICompoundMessage when its IOutputMessage
+        //       implements IHasTags (should be similar to the above).
+
+        return constructNewResult(path, tags);
+    }
+
     // }}} Construct result ///////////////////////////////////////////////////
+
+    /**
+     * Gets path from received message (parsed data).
+     *
+     * @param parsedData
+     *   Received message.
+     * @return
+     *   Path contained in received message or <code>null</code> if it doesn't
+     *   contain any.
+     */
+    private static String getPath(IParsedData parsedData)
+    {
+        if (parsedData instanceof IHasPath)
+        {
+            return ((IHasPath)parsedData).getPath();
+        }
+
+        if (parsedData instanceof ICompoundMessage)
+        {
+            // This is what we get wen we are in AnalysisChain and previous
+            // analyzer sent us pure IOutputMessage.
+            IOutputMessage message =
+                ((ICompoundMessage)parsedData).getOutputMessage();
+
+            if (message instanceof IHasPath)
+            {
+                return ((IHasPath)message).getPath();
+            }
+        }
+
+        // Dummy message is quite a special case, we might want to make a
+        // subclass (of it) for our purpose in the future.
+        if (parsedData instanceof DummyParsedData)
+        {
+            return parsedData.getOriginalMessage();
+        }
+
+        return null;
+    }
 
     // {{{ AAnalyzer, implementation of abstract methods //////////////////////
 
@@ -141,69 +199,23 @@ public class MagicPathAnalyzer extends AAnalyzer
         // Empty implementation.
     }
 
-    private String getPathFromIHasPathOrDummyParsedData(IParsedData parsedData)
-    {
-        if (parsedData instanceof IHasPath)
-        {
-            return ((IHasPath)parsedData).getPath();
-        }
-        else if (parsedData instanceof DummyParsedData)
-        {
-            return parsedData.getOriginalMessage();
-        }
-
-        return null;
-    }
-
     @Override
     protected void processParsedMessage(IParsedData parsedData)
     {
-        String path = null;
-
-        if (parsedData instanceof ICompoundMessage)
-        {
-            // This is what we get wen we are in AnalysisChain and previous
-            // analyzer sent pure IOutputMessage.
-            IOutputMessage message =
-                ((ICompoundMessage)parsedData).getOutputMessage();
-
-            if (message instanceof IHasPath)
-            {
-                path = ((IHasPath)message).getPath();
-            }
-        }
-        else
-        {
-            path = getPathFromIHasPathOrDummyParsedData(parsedData);
-        }
+        String path = getPath(parsedData);
 
         if (path != null)
         {
-            List<Tag> tags = analyzePath(path);
-            IOutputMessage result;
-
-            if (parsedData instanceof IHasTags)
-            {
-                if (parsedData instanceof IOutputMessage)
-                {
-                    ((IHasTags)parsedData).addTags(tags);
-                    result = (IOutputMessage)parsedData;
-                }
-                else
-                {
-                    result = constructResult(path,
-                        ((IHasTags)parsedData).getTags(), tags);
-                }
-            }
-            // TODO: Handle instanceof ICompoundMessage when its IOutputMessage
-            //       implements IHasTags (should be similar to the above).
-            else
-            {
-                result = constructResult(path, tags);
-            }
-
-            this.runCallbacks(result);
+            this.runCallbacks(
+                // We need to pass ParsedData to preserve metadata or even
+                // whole message in some cases.
+                constructResult(parsedData, analyzePath(path), path));
         }
+
+        // TODO: We might also want to do other things then just ignore other
+        //       messages. Like resend them if they are also instances of
+        //       IOutputMessage or throw an exception, etc. This should be
+        //       configurable or subject to template method pattern.
     }
 
     @Override
