@@ -1,5 +1,6 @@
 DIAGRAMS = \
-    basic-idea.dia
+    basic-idea.dia \
+    basic-idea-with-comments.dia
 
 IMAGES = $(DIAGRAMS:.dia=.png)
 
