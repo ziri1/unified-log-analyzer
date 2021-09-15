@@ -33,6 +33,7 @@ public class StraceSyscallParsedData extends AParsedData
         GETCWD,
         LSTAT,
         OPEN,
+        OPENAT,
         READLINK,
         STAT,
         STATFS,
@@ -88,6 +89,10 @@ public class StraceSyscallParsedData extends AParsedData
 
                 case "open":
                     syscall = Syscall.OPEN;
+                    break;
+
+                case "openat":
+                    syscall = Syscall.OPENAT;
                     break;
 
                 case "readlink":

@@ -338,12 +338,17 @@ public class StracePathAnalyzer extends AAnalyzer
                 throw new IllegalArgumentException("pid = " + pid);
             }
 
+            if (pid == -1)
+            {
+                parentPid = Process.NO_PID; // -2
+            }
+
             Process parent = getProcess(parentPid);
 
             if (parent == null)
             {
-                parent = new Process(pid == -1 ? Process.NO_PID : pid, null);
-                _processes.put(new Integer(pid), parent);
+                parent = new Process(parentPid, null);
+                _processes.put(new Integer(parentPid), parent);
             }
 
             Process child =
@@ -624,6 +629,7 @@ public class StracePathAnalyzer extends AAnalyzer
             case CREAT:
                 return Statistics.Event.CREAT_SYSCALL;
             case OPEN:
+            case OPENAT:
                 return Statistics.Event.OPEN_SYSCALL;
             default:
                 return Statistics.Event.IGNORED_SYSCALL;
@@ -662,7 +668,10 @@ public class StracePathAnalyzer extends AAnalyzer
         switch (syscall)
         {
             case FORK:
-                _model.createProcess(pid, parsedData.getChildPid());
+                if (parsedData.getChildPid() != -1)
+                {
+                    _model.createProcess(pid, parsedData.getChildPid());
+                }
                 break;
 
             case EXEC:
@@ -686,6 +695,7 @@ public class StracePathAnalyzer extends AAnalyzer
 
             case CREAT:     // Pass-through
             case OPEN:
+            case OPENAT:
                 // Resolve absolute path if possible, returns null if we should
                 // ignore the open()/creat() call.
                 String file =

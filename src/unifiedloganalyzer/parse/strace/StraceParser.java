@@ -713,6 +713,10 @@ public class StraceParser implements IParser
                 fileArgumentAndRest = parseStringArgument(args);
                 break;
 
+            case OPENAT:
+                fileArgumentAndRest = parseSecondStringArgument(args);
+                break;
+
             // Set child PID when doing fork/vfork/clone.
             case FORK:
                 if (parsedData.isResultInteger())
@@ -810,6 +814,10 @@ public class StraceParser implements IParser
         return ret;
     }
 
+    private static Pair<String, String> parseSecondStringArgument(String argsStr)
+    {
+        return parseStringArgument(argsStr.substring(argsStr.indexOf(", ")+2));
+    }
     /**
      * Parse list of strings (like <code>["foo", "bar"]</code>) and return it
      * along with unparsed rest of syscall arguments.
