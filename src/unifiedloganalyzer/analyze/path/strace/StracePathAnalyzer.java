@@ -60,7 +60,7 @@ public class StracePathAnalyzer extends AAnalyzer
         /**
          * Any negative value can be used for its value.
          */
-        public static final int NO_PID = -2;
+        public static final int NO_PID = -1;
 
         /**
          * Exit code is non-negative integer, so negative value indicate that
@@ -338,11 +338,6 @@ public class StracePathAnalyzer extends AAnalyzer
                 throw new IllegalArgumentException("pid = " + pid);
             }
 
-            if (pid == -1)
-            {
-                parentPid = Process.NO_PID; // -2
-            }
-
             Process parent = getProcess(parentPid);
 
             if (parent == null)
@@ -535,7 +530,11 @@ public class StracePathAnalyzer extends AAnalyzer
             updateStatistics(Statistics.Event.WORKING_DIRECTORY_MISS);
         }
 
-        if (file.charAt(0) != '/' && wd != null)
+        if (file.matches("^\\./.*") && wd != null)
+        {
+            return wd + file.substring(1);
+        }
+        else if (file.charAt(0) != '/' && wd != null)
         {
             return wd + "/" + file;
         }
